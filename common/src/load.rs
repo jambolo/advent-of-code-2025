@@ -5,6 +5,23 @@ use std::{
     path::Path,
 };
 
+/// Loads the entire contents of the file specified as the first command-line argument into a string.
+/// 
+/// # Panics
+/// Panics if the file cannot be read or the argument is missing.
+/// 
+/// # Example
+/// ```no_run
+/// let contents = common::load::string();
+/// println!("{}", contents);
+/// ```
+pub fn string() -> String {
+    let path = get_path();
+
+    // Load data
+    read_to_string(&path).expect(&format!("Could not read the file \"{}\"", path))
+}
+
 /// Loads lines of data from the file specified as the first command-line argument into a vector of strings.
 /// 
 /// # Panics
