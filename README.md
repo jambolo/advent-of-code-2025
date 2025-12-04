@@ -11,3 +11,7 @@ Simple modulo arithmetic. Other than getting those annoying boundary conditions 
 ## Day 2
 
 Trivial
+
+## Day 3
+
+Trivial. I hope these start getting harder. There are only 12 days this year.
