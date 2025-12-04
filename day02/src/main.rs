@@ -1,4 +1,4 @@
-// Advent of Code, 2025, Day 2
+// Advent of Code 2025, Day 2
 
 use common::load;
 

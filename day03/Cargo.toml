@@ -1,0 +1,9 @@
+[package]
+name = "day03"
+edition = "2024"
+
+[dependencies]
+common = { path = "../common" }
+
+[features]
+part2 = []

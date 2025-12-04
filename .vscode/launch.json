@@ -26,19 +26,7 @@
                     "--package=day01"
                 ]
             },
-            "args": []
-        },
-        {
-            "name": "Debug unit tests in executable 'day01'",
-            "type": "lldb",
-            "request": "launch",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--bin=day01",
-                    "--package=day01"
-                ]
-            }
+            "args": ["day01/day01-input-example.txt"]
         },
         {
             "name": "Debug executable 'day02'",
@@ -54,16 +42,17 @@
             "args": ["day02/day02-input-example.txt"]
         },
         {
-            "name": "Debug unit tests in executable 'day02'",
+            "name": "Debug executable 'day03'",
             "type": "lldb",
             "request": "launch",
             "cargo": {
                 "args": [
-                    "test",
-                    "--bin=day02",
-                    "--package=day02"
+                    "run",
+                    "--bin=day03",
+                    "--package=day03"
                 ]
-            }
+            },
+            "args": ["day03/day03-input.txt"]
         }
     ]
 }
