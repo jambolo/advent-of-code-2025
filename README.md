@@ -15,3 +15,7 @@ Trivial
 ## Day 3
 
 Trivial. I hope these start getting harder. There are only 12 days this year.
+
+## Day 4
+
+Still trivial.
