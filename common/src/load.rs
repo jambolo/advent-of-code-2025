@@ -154,6 +154,9 @@ fn read_numbers_map(filename: impl AsRef<Path>) -> io::Result<Vec<Vec<i32>>> {
 /// Gets the path from the command line arguments
 fn get_path() -> String {
     let args: Vec<String> = env::args().collect();
+    if args.len() < 2 {
+        panic!("Please provide the input file path as the first argument.");
+    }
     args[1].clone()
 }
 
