@@ -19,3 +19,7 @@ Trivial. I hope these start getting harder. There are only 12 days this year.
 ## Day 4
 
 Still trivial.
+
+## Day 5
+
+I didn't know that sort_by_key can be used on a vector of tuples.
