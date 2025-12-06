@@ -23,3 +23,7 @@ Still trivial.
 ## Day 5
 
 I didn't know that sort_by_key can be used on a vector of tuples.
+
+## Day 6
+
+Yawn. I considered loading the data into a matrix and transposing, but it was easier to just process it the naive way.
