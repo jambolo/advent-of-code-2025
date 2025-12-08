@@ -32,3 +32,6 @@ Yawn. I considered loading the data into a matrix and transposing, but it was ea
 
 I think this one was easy because AoC has trained me to expect a solution that doesn't require enumeration.
 
+## Day 8
+
+Disappointingly easy.

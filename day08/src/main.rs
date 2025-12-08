@@ -1,6 +1,6 @@
 // Advent of Code 2025, Day 8
 
-use common::{load};
+use common::load;
 
 fn main() {
     println!("Day 8, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
@@ -38,28 +38,43 @@ fn main() {
         circuits.push(vec![i]);
     }
 
-    // Connect the closest N junction boxes
-    let n = 1000; // Number of boxes to connect
-    for i in 0..n {
-        connect(&mut circuits, distances[i].0);
-    }
+    if cfg!(feature = "part2") {
+        // Connect junction boxes until all are connected
+        let mut index = 0;
+        while circuits.len() > 1 {
+            connect(&mut circuits, distances[index].0);
+            index += 1;
+        }
+        // Print the product of the x coordinates of the last connected connection
+        let connection = distances[index - 1].0;
+        let from = connection.0;
+        let to = connection.1;
+        let result = locations[from].0 * locations[to].0;
+        println!("Result: {}", result);
+    } else {
+        // Connect the closest N junction boxes
+        let n = 1000; // Number of boxes to connect
+        for i in 0..n {
+            connect(&mut circuits, distances[i].0);
+        }
 
-    // Create a sorted list of circuit sizes
-    let mut circuit_sizes: Vec<usize> = Vec::new();
-    for c in circuits.iter() {
-        circuit_sizes.push(c.len());
-    }
-    circuit_sizes.sort();
+        // Create a sorted list of circuit sizes
+        let mut circuit_sizes: Vec<usize> = Vec::new();
+        for c in circuits.iter() {
+            circuit_sizes.push(c.len());
+        }
+        circuit_sizes.sort();
 
-    // Print the product of the sizes of the three largest circuits
-    let m = circuit_sizes.len();
-    let product = circuit_sizes[m - 1] * circuit_sizes[m - 2] * circuit_sizes[m - 3];
-    println!("Result: {}", product);
+        // Print the product of the sizes of the three largest circuits
+        let m = circuit_sizes.len();
+        let product = circuit_sizes[m - 1] * circuit_sizes[m - 2] * circuit_sizes[m - 3];
+        println!("Result: {}", product);
+    }
 }
 
-fn connect(circuits: &mut Vec<Vec<usize>>, pair: (usize, usize)) {
-    let from = pair.0;
-    let to = pair.1;
+fn connect(circuits: &mut Vec<Vec<usize>>, connection: (usize, usize)) {
+    let from = connection.0;
+    let to = connection.1;
     let cf = containing_circuit(circuits, from).unwrap();
     let ct = containing_circuit(circuits, to).unwrap();
     // If junctions are in different circuits, then merge the circuits. Otherwise, do nothing.
