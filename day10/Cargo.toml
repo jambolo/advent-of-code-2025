@@ -1,0 +1,10 @@
+[package]
+name = "day10"
+edition = "2024"
+
+[dependencies]
+common = { path = "../common" }
+itertools = "0.14.0"
+
+[features]
+part2 = []
