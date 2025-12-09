@@ -35,3 +35,9 @@ I think this one was easy because AoC has trained me to expect a solution that d
 ## Day 8
 
 Disappointingly easy.
+
+## Day 9
+
+Careful what you ask for ...
+This one took some thinking and fenceposts were a problem. The fact that all edges were vertical or horizontal allowed for some crucial optimizations. Also, note that the largest rectangle in my input data happened to be an interior rectangle; however, there were two largest rectangles in the example input, one interior and one exterior. As a result, my initial attempt got the correct answer without testing for interior vs. exterior.
+

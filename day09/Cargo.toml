@@ -7,3 +7,4 @@ common = { path = "../common" }
 
 [features]
 part2 = []
+default = ["part2"]
