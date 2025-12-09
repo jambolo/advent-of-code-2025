@@ -1,7 +1,6 @@
 // Advent of Code 2025, Day 1
 
 use common::load;
-use serde_json::json;
 
 const STARTING_POSITION: i32 = 50;
 const P: i32 = 100;
@@ -17,7 +16,15 @@ fn main() {
     let mut password = 0;
 
     #[cfg(feature = "instrumented")]
-    instrumentation::record_initial(lines.len(), current_position, password);
+    let mut history = instrumentation::Recording {
+        frames: Vec::new(),
+        rotation_number: 0,
+        total_rotations: 0,
+        progress: 0.0,
+    };
+
+    #[cfg(feature = "instrumented")]
+    instrumentation::record_initial(&mut history, lines.len(), current_position, password);
     
     for line in lines {
         // Parse the direction and distance. Format is e.g. "R2", "L3".
@@ -28,6 +35,7 @@ fn main() {
 
         #[cfg(feature = "instrumented")]
         instrumentation::record_rotation_start(
+            &mut history,
             current_position,
             password,
             &line,
@@ -38,17 +46,17 @@ fn main() {
         // In part 2, count the number of times we pass position 0 (but not land on it)
         if cfg!(feature = "part2") {
             #[cfg(feature = "instrumented")]
-            instrumentation::record_zero_passes(full_turns, password, &line, distance, turn);
+            instrumentation::record_zero_passes(&mut history, full_turns, password, &line, distance, turn);
             password += full_turns;
             match turn {
                 "R" if current_position > P - remainder => {
                     #[cfg(feature = "instrumented")]
-                    instrumentation::record_zero_passes(1, password, &line, distance, turn);
+                    instrumentation::record_zero_passes(&mut history, 1, password, &line, distance, turn);
                     password += 1;
                 },
                 "L" if (0 < current_position) && (current_position < remainder) => {
                     #[cfg(feature = "instrumented")]
-                    instrumentation::record_zero_passes(1, password, &line, distance, turn);
+                    instrumentation::record_zero_passes(&mut history, 1, password, &line, distance, turn);
                     password += 1;
                 },
                 "R" | "L" => {},
@@ -66,6 +74,7 @@ fn main() {
         if current_position == 0 {
                 #[cfg(feature = "instrumented")]
                 instrumentation::record_zero_land(
+                    &mut history,
                     current_position,
                     password,
                     &line,
@@ -77,6 +86,7 @@ fn main() {
         } else {
             #[cfg(feature = "instrumented")]
             instrumentation::record_rotation_end(
+                &mut history,
                 current_position,
                 password,
                 &line,
@@ -88,70 +98,70 @@ fn main() {
     }
 
     #[cfg(feature = "instrumented")]
-    instrumentation::record_final(current_position, password);
+    instrumentation::record_final(&mut history, current_position, password);
 
     #[cfg(not(feature = "instrumented"))]
     println!("The password is: {}", password);
 
     #[cfg(feature = "instrumented")]
-    instrumentation::log_to_console(password);
+    instrumentation::log_to_console(&history, password);
 }
 
 #[cfg(feature = "instrumented")]
 mod instrumentation {
+    use serde_json::json;
 
-    static mut frames: Vec<serde_json::Value> = Vec::new();
-    static mut rotation_number: usize = 0;
-    static mut total_rotations: usize = 1;
-    static mut progress: f64 = 0.0;
-
-    pub fn record_initial(max_rotations: usize, position: i32, password: i32) {
-        unsafe {
-            total_rotations = max_rotations;
-            frames.push(json!({
-                "frame_type": "initial",
-                "rotation_number": rotation_number,
-                "position": position,
-                "password": password,
-                "progress": progress
-            }));
-        }
+    pub struct Recording {
+        pub frames: Vec<serde_json::Value>,
+        pub rotation_number: usize,
+        pub total_rotations: usize,
+        pub progress: f64,
     }
 
-    pub fn record_rotation_start(position: i32, password: i32, instruction: &str, distance: i32, direction: &str) {
-        unsafe {
-            rotation_number += 1;
-            progress = (rotation_number as f64) / (total_rotations as f64);
-            frames.push(json!({
-                "frame_type": "rotation_start",
-                "rotation_number": rotation_number,
-                "position": position,
-                "password": password,
+
+    pub fn record_initial(history: &mut Recording, total_rotations: usize, position: i32, password: i32) {
+        history.total_rotations = total_rotations;
+        history.frames.push(json!({
+            "frame_type": "initial",
+            "rotation_number": history.rotation_number,
+            "position": position,
+            "password": password,
+            "progress": history.progress
+        }));
+    }
+
+    pub fn record_rotation_start(history: &mut Recording, position: i32, password: i32, instruction: &str, distance: i32, direction: &str) {
+        history.rotation_number += 1;
+        history.progress = (history.rotation_number as f64) / (history.total_rotations as f64);
+        history.frames.push(json!({
+            "frame_type": "rotation_start",
+            "rotation_number": history.rotation_number,
+            "position": position,
+            "password": password,
+            "instruction": instruction,
+            "distance": distance,
+            "direction": direction,
+            "progress": history.progress
+        }));
+    }
+
+    pub fn record_zero_passes(history: &mut Recording, n: i32, password: i32, instruction: &str, distance: i32, direction: &str) {
+        for i in 0..n {
+            history.frames.push(json!({
+                "frame_type": "zero_pass",
+                "rotation_number": history.rotation_number,
+                "position": 0,
+                "password": password + i + 1,
                 "instruction": instruction,
                 "distance": distance,
                 "direction": direction,
-                "progress": progress
+                "progress": history.progress
             }));
-        }
-    }
-
-    pub fn record_zero_passes(n: i32, password: i32, instruction: &str, distance: i32, direction: &str) {
-        unsafe {
-            for i in 0..n {
-                frames.push(json!({
-                    "frame_type": "zero_pass",
-                    "position": 0,
-                    "password": password + i + 1,
-                    "instruction": instruction,
-                    "distance": distance,
-                    "direction": direction,
-                    "progress": progress
-                }));
-            }
         }
     }
 
     pub fn record_zero_land(
+        history: &mut Recording,
         position: i32,
         password: i32,
         instruction: &str,
@@ -159,23 +169,22 @@ mod instrumentation {
         direction: &str,
         passes_in_rotation: i32,
     ) {
-        unsafe {
-            frames.push(json!({
-                "frame_type": "zero_land",
-                "rotation_number": rotation_number,
-                "position": position,
-                "password": password,
-                "instruction": instruction,
-                "distance": distance,
-                "direction": direction,
-                "lands_on_zero": true,
-                "passes_in_rotation": passes_in_rotation,
-                "progress": progress
-            }));
-        }
+        history.frames.push(json!({
+            "frame_type": "zero_land",
+            "rotation_number": history.rotation_number,
+            "position": position,
+            "password": password,
+            "instruction": instruction,
+            "distance": distance,
+            "direction": direction,
+            "lands_on_zero": true,
+            "passes_in_rotation": passes_in_rotation,
+            "progress": history.progress
+        }));
     }
 
     pub fn record_rotation_end(
+        history: &mut Recording,
         position: i32,
         password: i32,
         instruction: &str,
@@ -183,42 +192,36 @@ mod instrumentation {
         direction: &str,
         passes_in_rotation: i32,
     ) {
-        unsafe {
-            frames.push(json!({
-                "frame_type": "rotation_end",
-                "rotation_number": rotation_number,
-                "position": position,
-                "password": password,
-                "instruction": instruction,
-                "distance": distance,
-                "direction": direction,
-                "lands_on_zero": false,
-                "passes_in_rotation": passes_in_rotation,
-                "progress": progress
-            }));
-        }
+        history.frames.push(json!({
+            "frame_type": "rotation_end",
+            "rotation_number": history.rotation_number,
+            "position": position,
+            "password": password,
+            "instruction": instruction,
+            "distance": distance,
+            "direction": direction,
+            "lands_on_zero": false,
+            "passes_in_rotation": passes_in_rotation,
+            "progress": history.progress
+        }));
     }
 
-    pub fn record_final(position: i32, password: i32) {
-        unsafe {
-            frames.push(json!({
-                "frame_type": "final",
-                "rotation_number": rotation_number,
-                "position": position,
-                "password": password,
-                "progress": progress
-            }));
-        }
+    pub fn record_final(history: &mut Recording, position: i32, password: i32) {
+        history.frames.push(json!({
+            "frame_type": "final",
+            "rotation_number": history.rotation_number,
+            "position": position,
+            "password": password,
+            "progress": history.progress
+        }));
     }
 
-    pub fn log_to_console(password: i32) {
-        unsafe {
-            let log = json!({
-                "frames": frames,
-                "total_rotations": rotation_number,
-                "final_password": password
-            });
-            println!("{}", log.to_string());
-        }
+    pub fn log_to_console(history: &Recording, password: i32) {
+        let log = json!({
+            "frames": history.frames,
+            "total_rotations": history.total_rotations,
+            "final_password": password
+        });
+        println!("{}", log.to_string());
     }
 }
