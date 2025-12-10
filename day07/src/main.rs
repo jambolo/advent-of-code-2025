@@ -6,83 +6,84 @@ fn main() {
     println!("Day 7, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
 
     let map = load::map();
-    let height = map.len();
-    let width = map[0].len();
 
     if cfg!(feature = "part2") {
-        use std::collections::HashMap;
-
-        // List of timelines in the form of beams columns and their timeline counts
-        let mut timelines: HashMap<usize, i64> = HashMap::new();
-
-        // Beams move down the map
-        for y in 0..height {
-            // Search for a source before doing anything else
-            if timelines.is_empty() {
-                for x in 0..width {
-                    if map[y][x] == 'S' {
-                        timelines.insert(x, 1);
-                        break;
-                    }
-                }
-                continue;
-            }
-
-            // Scan each beam column for a splitter
-            let timeline_columns: Vec<usize> = timelines.keys().cloned().collect();
-            for x in timeline_columns {
-                if map[y][x] == '^' {
-                    let count = timelines[&x];
-                    // Split the timeline
-                    timelines.remove(&x);
-                    if x > 0 {
-                        *timelines.entry(x - 1).or_insert(0) += count;                    }
-                    if x + 1 < width {
-                        *timelines.entry(x + 1).or_insert(0) += count;                    }
-                }
-            }
-        }
-
-        // Count the total number of timelines
-        let final_timelines: i64 = timelines.values().sum();
-        println!("Total number of timelines: {}", final_timelines);
+        part2(map);
     } else {
-        use std::collections::HashSet;
+        part1(map);
+    }
+}
 
-        // List of columns with beams
-        let mut beams = HashSet::new();
+fn part1(map: Vec<Vec<char>>) {
+    use std::collections::HashSet;
 
-        // Number of splitters encountered
-        let mut count: i64 = 0;
+    let width = map[0].len();
 
-        // Beams move down the map
-        for y in 0..height {
-            // Search for a source before doing anything else
-            if beams.is_empty() {
-                for x in 0..width {
-                    if map[y][x] == 'S' {
-                        beams.insert(x);
-                        break;
-                    }
-                }
-                continue;
+    // List of columns with beams
+    let mut beams = HashSet::new();
+
+    // Number of splitters encountered
+    let mut count: i64 = 0;
+
+    // Beams move down the map
+    for row in map {
+        // Search for a source before doing anything else
+        if beams.is_empty() {
+            if let Some(x) = row.iter().position(|&c| c == 'S') {
+                beams.insert(x);
             }
+            continue;
+        }
 
-            // Scan each beam column for a splitter
-            let beam_columns: Vec<usize> = beams.iter().cloned().collect();
-            for x in beam_columns {
-                if map[y][x] == '^' {
-                    count += 1;
-                    beams.remove(&x);
-                    if x > 0 {
-                        beams.insert(x - 1);
-                    }
-                    if x + 1 < width {
-                        beams.insert(x + 1);
-                    }
+        for x in beams.iter().cloned().collect::<Vec<_>>() {
+            if row[x] == '^' {
+                count += 1;
+                beams.remove(&x);
+                if x > 0 {
+                    beams.insert(x - 1);
+                }
+                if x + 1 < width {
+                    beams.insert(x + 1);
                 }
             }
         }
-        println!("Number of splitters encountered: {}", count);
     }
+    println!("Number of splitters encountered: {}", count);
+}
+
+fn part2(map: Vec<Vec<char>>) {
+    use std::collections::HashMap;
+
+    let width = map[0].len();
+
+    // List of timelines in the form of beams columns and their timeline counts
+    let mut timelines: HashMap<usize, i64> = HashMap::new();
+
+    // Beams move down the map
+    for row in map {
+        // Search for a source before doing anything else
+        if timelines.is_empty() {
+            if let Some(x) = row.iter().position(|&c| c == 'S') {
+                timelines.insert(x, 1);
+            }
+            continue;
+        }
+
+        // Scan each beam column for splitters in this row
+        for x in timelines.keys().cloned().collect::<Vec<_>>() {
+            if row[x] == '^' {
+                let count = timelines.remove(&x).unwrap();
+                if x > 0 {
+                    *timelines.entry(x - 1).or_insert(0) += count;
+                }
+                if x < width - 1 {
+                    *timelines.entry(x + 1).or_insert(0) += count;
+                }
+            }
+        }
+    }
+
+    // Count the total number of timelines
+    let final_timelines: i64 = timelines.values().sum();
+    println!("Total number of timelines: {}", final_timelines);
 }

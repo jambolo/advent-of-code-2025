@@ -1,17 +1,8 @@
-pub fn map(map: &Vec<Vec<char>>) {
+pub fn map(map: &[Vec<char>]) {
     let width = map[0].len();
-    print_horizontal_border(width);
+    println!("+{}+", "-".repeat(width));
     for row in map {
-        let line: String = row.iter().collect();
-        println!("|{}|", line);
+        println!("|{}|", row.iter().collect::<String>());
     }
-    print_horizontal_border(width);
+    println!("+{}+", "-".repeat(width));
 }
-
-fn print_horizontal_border(width: usize) {
-    print!("+");
-    for _ in 0..(width) {
-        print!("-");
-    }
-    println!("+");
-    }

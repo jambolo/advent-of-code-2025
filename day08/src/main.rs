@@ -86,11 +86,6 @@ fn connect(circuits: &mut Vec<Vec<usize>>, connection: (usize, usize)) {
     }
 }
 
-fn containing_circuit(circuits: &Vec<Vec<usize>>, junction: usize) -> Option<usize> {
-    for (i, c) in circuits.iter().enumerate() {
-        if c.contains(&junction) {
-            return Some(i);
-        }
-    }
-    None
+fn containing_circuit(circuits: &[Vec<usize>], junction: usize) -> Option<usize> {
+    circuits.iter().position(|c| c.contains(&junction))
 }
