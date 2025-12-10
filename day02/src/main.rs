@@ -17,11 +17,8 @@ fn main() {
         for number in start..=end {
             let num_str = number.to_string();
             if cfg!(feature = "part2") {
-                for n in 2..=num_str.len() {
-                    if duplicated(&num_str, n) {
-                        sum += number;
-                        break;
-                    }
+                if (2..=num_str.len()).any(|n| duplicated(&num_str, n)) {
+                    sum += number;
                 }
             } else {
                 if duplicated(&num_str, 2) {
@@ -35,7 +32,7 @@ fn main() {
 
 /// Parses a string of comma-separated ranges into a vector of (start, end) tuples.
 fn parse_ranges(input: &str) -> Vec<(i64, i64)> {
-    let ranges = input
+    input
         .trim()
         .split(',')
         .map(|range_str| {
@@ -47,24 +44,20 @@ fn parse_ranges(input: &str) -> Vec<(i64, i64)> {
             let end = endpoints[1].parse::<i64>().expect("Invalid end of range");
             (start, end)
         })
-        .collect();
-    ranges
+        .collect()
 }
 
+/// Returns true if all n parts are the same
 fn duplicated(s: &str, n: usize) -> bool {
     let len = s.len();
     // Must split evenly into n parts
     if len % n != 0 {
         return false;
     }
+
     let part_len = len / n;
-    let first_part = &s[..part_len];
-    for i in 1..n {
-        let start = i * part_len;
-        let end = start + part_len;
-        if &s[start..end] != first_part {
-            return false;
-        }
-    }
-    true
+    let first_chunk = &s.as_bytes()[..part_len];
+    s.as_bytes()
+        .chunks(part_len)
+        .all(|chunk| chunk == first_chunk)
 }

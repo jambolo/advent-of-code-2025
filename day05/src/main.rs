@@ -34,45 +34,36 @@ fn main() {
 }
 
 fn part1(fresh_ranges: &[(i64, i64)], ingredient_ids: &[i64]) {
-    // Determine which ingredient IDs are fresh
-    let fresh_ingredients: Vec<i64> = ingredient_ids
+    let count = ingredient_ids
         .iter()
-        .filter(|&id| {
-            fresh_ranges.iter().any(|&(start, end)| *id >= start && *id <= end)
-        })
-        .cloned()
-        .collect();
-    // Output the result
-    println!("Number of fresh ingredients: {}", fresh_ingredients.len());
+        .filter(|&&id| is_fresh(fresh_ranges, id))
+        .count();
+    println!("Number of fresh ingredients: {}", count);
+}
+
+fn is_fresh(fresh_ranges: &[(i64, i64)], id: i64) -> bool {
+    fresh_ranges.iter().any(|&(start, end)| id >= start && id <= end)
 }
 
 fn part2(ranges: &[(i64, i64)]) {
-    // Sort ranges by start value
-    let mut sorted_ranges: Vec<(i64, i64)> = ranges.to_vec();
-    sorted_ranges.sort_by_key(|&(start, _)| start);
+    let mut sorted = ranges.to_vec();
+    sorted.sort_unstable_by_key(|&(start, _)| start);
 
-    // Merge overlapping ranges
-    let mut merged_ranges: Vec<(i64, i64)> = Vec::new();
-    for &(start, end) in &sorted_ranges {
-        if let Some(last) = merged_ranges.last_mut() {
+    let mut merged: Vec<(i64, i64)> = Vec::new();
+    for (start, end) in sorted {
+        if let Some(last) = merged.last_mut() {
             if start <= last.1 {
-                last.1 = last.1.max(end);
-                continue;
+                last.1 = last.1.max(end);  // Merge overlapping ranges
+                continue; // Don't push a new range
             }
+            merged.push((start, end));
         }
-        merged_ranges.push((start, end));
     }
-
-    // Calculate total fresh ingredient count
-    let total_fresh: i64 = merged_ranges.iter().map(|&(start, end)| end - start + 1).sum();
-
-    // Output the result
+    let total_fresh: i64 = merged.iter().map(|&(start, end)| end - start + 1).sum();
     println!("Total number of fresh ingredients: {}", total_fresh);
 }
 
 fn parse_range(line: &str) -> (i64, i64) {
-    let parts: Vec<&str> = line.split('-').collect();
-    let start: i64 = parts[0].parse().unwrap();
-    let end: i64 = parts[1].parse().unwrap();
-    (start, end)
+    let (start, end) = line.split_once('-').unwrap();
+    (start.parse().unwrap(), end.parse().unwrap())
 }
