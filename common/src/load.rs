@@ -19,7 +19,8 @@ pub fn string() -> String {
     let path = get_path();
 
     // Load data
-    read_to_string(&path).expect(&format!("Could not read the file \"{}\"", path))
+    read_to_string(&path)
+        .unwrap_or_else(|_| panic!("Could not read the file \"{}\"", path))
 }
 
 /// Loads lines of data from the file specified as the first command-line argument into a vector of strings.
@@ -38,7 +39,8 @@ pub fn lines() -> Vec<String> {
     let path = get_path();
 
     // Load data
-    read_lines(&path).expect(&format!("Could not read the file \"{}\"", path))
+    read_lines(&path)
+        .unwrap_or_else(|_| panic!("Could not read the file \"{}\"", path))
 }
 
 /// Reads a file line by line into a vector of strings.
@@ -49,8 +51,10 @@ pub fn lines() -> Vec<String> {
 /// # Returns
 /// * `Ok(Vec<String>)` with each line as a string, or an error if the file cannot be read.
 fn read_lines(filename: impl AsRef<Path>) -> io::Result<Vec<String>> {
-    let input = read_to_string(filename)?;
-    Ok(input.lines().map(|line| line.to_string()).collect())
+    read_to_string(filename)
+        .map(|input|
+            input.lines().map(str::to_string).collect()
+        )
 }
 
 /// Loads a file specified as the first command-line argument and splits its contents by commas into a vector of strings.
@@ -69,7 +73,8 @@ pub fn comma_separated_values() -> Vec<String> {
     let path = get_path();
 
     // Load data
-    read_comma_separated_values(&path).expect(&format!("Could not read the file \"{}\"", path))
+    read_comma_separated_values(&path)
+        .unwrap_or_else(|_| panic!("Could not read the file \"{}\"", path))
 }
 
 /// Reads an entire file and splits it by ',' into a vector of strings.
@@ -80,8 +85,10 @@ pub fn comma_separated_values() -> Vec<String> {
 /// # Returns
 /// * `Ok(Vec<String>)` with each value as a string, or an error if the file cannot be read.
 fn read_comma_separated_values(filename: impl AsRef<Path>) -> io::Result<Vec<String>> {
-    let input = read_to_string(filename)?;
-    Ok(input.split(',').map(|s| s.trim().to_string()).collect())
+    read_to_string(filename)
+        .map(|input|
+            input.split(',').map(|s| s.trim().to_string()).collect()
+        )
 }
 
 /// Loads a file specified as the first command-line argument into a 2D array of characters.
@@ -101,7 +108,8 @@ pub fn map() -> Vec<Vec<char>> {
     let path = get_path();
 
     // Load data
-    read_map(&path).expect(&format!("Could not read the file \"{}\"", path))
+    read_map(&path)
+        .unwrap_or_else(|_| panic!("Could not read the file \"{}\"", path))
 }
 
 /// Reads an entire file into a 2D array of characters.
@@ -113,8 +121,13 @@ pub fn map() -> Vec<Vec<char>> {
 /// # Returns
 /// * `Ok(Vec<Vec<char>>)` with each row as a vector of characters, or an error if the file cannot be read.
 fn read_map(filename: impl AsRef<Path>) -> io::Result<Vec<Vec<char>>> {
-    let input = read_to_string(filename)?;
-    Ok(input.lines().map(|line| line.chars().collect()).collect())
+    read_to_string(filename)
+        .map(|input|
+            input
+                .lines()
+                .map(|line| line.chars().collect())
+                .collect()
+        )
 }
 
 /// Loads a file specified as the first command-line argument into a 2D array of numbers.
@@ -134,7 +147,8 @@ pub fn numbers_map() -> Vec<Vec<i32>> {
     let path = get_path();
 
     // Load data
-    read_numbers_map(&path).expect(&format!("Could not read the file \"{}\"", path))
+    read_numbers_map(&path)
+        .unwrap_or_else(|_| panic!("Could not read the file \"{}\"", path))
 }
 
 /// Reads an entire file into a 2D array of numbers (i32).
@@ -146,18 +160,29 @@ pub fn numbers_map() -> Vec<Vec<i32>> {
 /// # Returns
 /// * `Ok(Vec<Vec<i32>>)` with each row as a vector of numbers, or an error if the file cannot be read.
 fn read_numbers_map(filename: impl AsRef<Path>) -> io::Result<Vec<Vec<i32>>> {
-    let input = read_to_string(filename)?;
-    Ok(input.lines().map(|line| line.chars().filter_map(|c| c.to_digit(10)).map(|u| u as i32)
-    .collect()).collect())
+    read_to_string(filename)
+        .map(|input|
+            input
+                .lines()
+                .map(|line|
+                    line
+                        .chars()
+                        .filter_map(|c|
+                            c
+                                .to_digit(10)
+                                .map(|u| u as i32)
+                        )
+                    .collect()
+                )
+                .collect()
+        )
 }
 
 /// Gets the path from the command line arguments
 fn get_path() -> String {
-    let args: Vec<String> = env::args().collect();
-    if args.len() < 2 {
-        panic!("Please provide the input file path as the first argument.");
-    }
-    args[1].clone()
+    env::args()
+        .nth(1)
+        .unwrap_or_else(|| panic!("Please provide the input file path as the first argument."))
 }
 
 #[cfg(test)]

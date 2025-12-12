@@ -54,19 +54,17 @@ fn main() {
     }
 
     // The last line contains the operation to perform on each column.
-    let operations: &Vec<char> = &lines[lines.len() - 1]
+    let operations: Vec<char> = lines[lines.len() - 1]
         .split_whitespace()
         .map(|s| s.chars().next().unwrap())
         .collect();
 
-    let mut sum: i64 = 0;
-    for (i, column) in columns.iter().enumerate() {
-        let result:i64 = match operations[i] {
-            '+' => column.iter().sum(),
-            '*' => column.iter().product(),
+    let sum = columns.iter().enumerate().map(|(i, column)| {
+        match operations[i] {
+            '+' => column.iter().sum::<i64>(),
+            '*' => column.iter().product::<i64>(),
             _ => panic!("Unknown operation"),
-        };
-        sum += result;
-    }
+        }
+    }).sum::<i64>();
     println!("Sum: {}", sum);
 }

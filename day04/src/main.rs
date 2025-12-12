@@ -14,47 +14,36 @@ fn main() {
     }
 }
 
-fn part1(map: &Vec<Vec<char>>) {
-    let height = map.len();
-    let width = map[0].len();
-    // Count the number of cells with less than 4 neighbors
-    let mut count = 0;
-    for y in 0..height {
-        for x in 0..width {
-            if map[y][x] == '@' {
-                let neighbors = count_neighbors(&map, x, y);
-                if neighbors < 4 {
-                    count += 1;
-                }
-            }
-        }
-    }
+fn part1(map: &[Vec<char>]) {
+    let count = map.iter().enumerate()
+        .map(|(y, row)| row.iter().enumerate()
+            .filter(|(x, cell)| **cell == '@' && count_neighbors(map, *x, y) < 4)
+            .count()
+        )
+        .sum::<usize>();
     println!("Cells with less than 4 neighbors: {}", count);
 }
 
-fn count_neighbors(map: &Vec<Vec<char>>, x: usize, y: usize) -> usize {
-    let mut neighbors = 0;
-    let height = map.len();
-    let width = map[0].len();
-
-    for dy in -1..=1 {
-        for dx in -1..=1 {
-            if dx != 0 || dy != 0 {
-                let nx = x as isize + dx;
-                let ny = y as isize + dy;
-                if nx >= 0 && nx < width as isize && ny >= 0 && ny < height as isize {
-                    if map[ny as usize][nx as usize] == '@' {
-                        neighbors += 1;
-                    }
-                }
-            }
-        }
-    }
-    neighbors
+fn count_neighbors(map: &[Vec<char>], x: usize, y: usize) -> usize {
+    neighboring_cells(map, x, y).filter(|&c| c == '@').count()
 }
 
-fn part2(map: &Vec<Vec<char>>) {
-    let mut new_map = map.clone();
+fn neighboring_cells(map: &[Vec<char>], x: usize, y: usize) -> impl Iterator<Item = char> + '_ {
+    let height = map.len();
+    let width = map[0].len();
+    let x0 = x.saturating_sub(1);
+    let y0 = y.saturating_sub(1);
+    let x1 = (x + 1).min(width - 1);
+    let y1 = (y + 1).min(height - 1);
+    (y0..=y1).flat_map(move |ny| {
+        (x0..=x1)
+            .filter(move |&nx| nx != x || ny != y)
+            .map(move |nx| map[ny][nx])
+    })
+}
+
+fn part2(map: &[Vec<char>]) {
+    let mut new_map = map.to_vec();
     let height = new_map.len();
     let width = new_map[0].len();
     // Let's try the naive approach
@@ -63,11 +52,9 @@ fn part2(map: &Vec<Vec<char>>) {
         let previous_removed = removed;
         for y in 0..height {
             for x in 0..width {
-                if new_map[y][x] == '@' {
-                    if count_neighbors(&new_map, x, y) < 4 {
-                        new_map[y][x] = '.';
-                        removed += 1;
-                    }
+                if new_map[y][x] == '@' && count_neighbors(&new_map, x, y) < 4 {
+                    new_map[y][x] = '.';
+                    removed += 1;
                 }
             }
         }
@@ -75,5 +62,5 @@ fn part2(map: &Vec<Vec<char>>) {
             break;
         }
     }
-    println!("Total cells removed_this_pass: {}", removed);
+    println!("Total cells removed: {}", removed);
 }
