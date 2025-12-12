@@ -10,8 +10,9 @@ members = [
     "day07",
     "day08",
 
-
-    "day11"
+    
+    "day11",
+    "day12"
 ]
 resolver = "3"
 
