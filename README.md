@@ -35,3 +35,15 @@ I think this one was easy because AoC has trained me to expect a solution that d
 ## Day 8
 
 Disappointingly easy.
+
+## Day 9
+
+Careful what you ask for. Still working on it...
+
+## Day 10
+
+Well, that escalated quickly! Still working on it ...
+
+## Day 11
+
+After banging my head against the wall for a few hours, I finally came upon the key optimization.
