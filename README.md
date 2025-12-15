@@ -47,3 +47,7 @@ Well, that escalated quickly! Still working on it ...
 ## Day 11
 
 After banging my head against the wall for a few hours, I finally came upon the key optimization.
+
+## Day 12
+
+Turned out to be trivial.
