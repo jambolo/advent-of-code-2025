@@ -38,7 +38,8 @@ Disappointingly easy.
 
 ## Day 9
 
-Careful what you ask for. Still working on it...
+Careful what you ask for ...
+This one took some thinking and fenceposts were a problem. The fact that all edges were vertical or horizontal allowed for some crucial optimizations. Also, note that the largest rectangle in my input data happened to be an interior rectangle; however, there were two largest rectangles in the example input, one interior and one exterior. As a result, my initial attempt got the correct answer without testing for interior vs. exterior.
 
 ## Day 10
 
@@ -47,3 +48,7 @@ Well, that escalated quickly! Still working on it ...
 ## Day 11
 
 After banging my head against the wall for a few hours, I finally came upon the key optimization.
+
+## Day 12
+
+Turned out to be trivial.
