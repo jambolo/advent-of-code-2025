@@ -4,7 +4,10 @@ edition = "2024"
 
 [dependencies]
 common = { path = "../common" }
+serde = { version = "1.0.215", features = ["derive"], optional = true }
+serde_json = { version = "1.0.133", optional = true }
 
 [features]
 part2 = []
-default = ["part2"]
+instrumented = ["part2", "serde", "serde_json"]
+default = ["instrumented", "part2"]

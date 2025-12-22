@@ -22,22 +22,19 @@ fn main() {
 
 fn part2(ranges: &[(i64, i64)]) {
     #[cfg(feature = "instrumented")]
-    let mut instrumentation = instrumentation::Instrumentation::new();
-    #[cfg(feature = "instrumented")]
-    instrumentation.set_ranges(ranges);
+    let mut instrumentation = instrumentation::Instrumentation::new(ranges);
 
     let mut sum: i64 = 0;
-    let mut last_range: Option<(usize, i64, i64)> = None;
-
     for (range_index, (start, end)) in ranges.iter().copied().enumerate() {
-        last_range = Some((range_index, start, end));
-
+        #[cfg(not(feature = "instrumented"))]
+        let _ = range_index;
         #[cfg(feature = "instrumented")]
         instrumentation.record_range_start(range_index, start, end, sum);
 
         for number in start..=end {
             #[cfg(feature = "instrumented")]
             instrumentation.increment_inspected();
+
             let num_str = number.to_string();
             let len = num_str.len();
 
@@ -59,24 +56,10 @@ fn part2(ranges: &[(i64, i64)]) {
                 let candidate_length = len / repeat_count;
                 let matched = duplicated(&num_str, candidate_length);
 
-//                #[cfg(feature = "instrumented")]
-//                instrumentation.record_pattern_check(
-//                    range_index,
-//                    start,
-//                    end,
-//                    number,
-//                    &num_str,
-//                    sum,
-//                    repeat_count,
-//                    candidate_length,
-//                    &num_str[..candidate_length],
-//                    matched.is_some(),
-//                );
-
                 if let Some(candidate) = matched {
                     sum += number;
-                    instrumentation.increment_range_invalids();
-                    instrumentation.increment_global_invalids();
+                    #[cfg(not(feature = "instrumented"))]
+                    let _ = candidate;
 
                     #[cfg(feature = "instrumented")]
                     instrumentation.record_invalid_hit(
@@ -108,10 +91,7 @@ fn part2(ranges: &[(i64, i64)]) {
     println!("Sum: {}", sum);
 
     #[cfg(feature = "instrumented")]
-    if let Some((range_index, start, end)) = last_range {
-        instrumentation.record_final_summary(range_index, start, end, sum);
-        instrumentation.finalize_and_print();
-    }
+    instrumentation.finalize_and_print(sum);
 }
 
 fn part1(ranges: &[(i64, i64)]) {
@@ -175,42 +155,31 @@ mod instrumentation {
         range_invalids: usize,
         global_invalids: usize,
         inspected: usize,
+        #[serde(skip_serializing)]
+        last_range: Option<(usize, i64, i64)>,
     }
 
     impl Instrumentation {
-        pub fn new() -> Self {
+        pub fn new(ranges: &[(i64, i64)]) -> Self {
             Self {
                 puzzle_day: 2,
                 part: 2,
                 sampling_stride: Some(SAMPLING_STRIDE),
-                ranges: Vec::new(),
+                ranges: ranges.iter().enumerate()
+                    .map(|(index, (start, end))| RangeDescriptor {
+                        index,
+                        start: *start,
+                        end: *end,
+                        label: None,
+                    })
+                    .collect(),
                 frames: Vec::new(),
                 final_sum: 0,
                 range_invalids: 0,
                 global_invalids: 0,
                 inspected: 0,
+                last_range: None,
             }
-        }
-
-        pub fn set_ranges(&mut self, ranges: &[(i64, i64)]) {
-            self.ranges = ranges
-                .iter()
-                .enumerate()
-                .map(|(index, (start, end))| RangeDescriptor {
-                    index,
-                    start: *start,
-                    end: *end,
-                    label: None,
-                })
-                .collect();
-        }
-
-        pub fn increment_global_invalids(&mut self) {
-            self.global_invalids += 1;
-        }
-
-        pub fn increment_range_invalids(&mut self) {
-            self.range_invalids += 1;
         }
 
         pub fn increment_inspected(&mut self) {
@@ -267,6 +236,7 @@ mod instrumentation {
             range_end: i64,
             global_sum: i64,
         ) {
+            self.last_range = Some((range_index, range_start, range_end));
             self.frames.push(Frame {
                 frame_type: "range_start",
                 range_index,
@@ -287,40 +257,6 @@ mod instrumentation {
             });
         }
 
-//        pub fn record_pattern_check(
-//            &mut self,
-//            range_index: usize,
-//            range_start: i64,
-//            range_end: i64,
-//            number: i64,
-//            digits: &str,
-//            global_sum: i64,
-//            repeat_count: usize,
-//            candidate_length: usize,
-//            candidate: &str,
-//            is_match: bool,
-//        ) {
-//            let range_progress = self.compute_range_progress(range_index, range_start, range_end);
-//            self.frames.push(Frame {
-//                frame_type: "pattern_check",
-//                range_index,
-//                range_start,
-//                range_end,
-//                range_progress,
-//                global_sum,
-//                global_invalids: self.global_invalids,
-//                range_invalids: Some(self.range_invalids),
-//                inspected: Some(self.inspected),
-//                message: None,
-//                number: Some(number),
-//                digits: Some(digits.to_string()),
-//                repeat_count: Some(repeat_count),
-//                chunk_length: Some(candidate_length),
-//                candidate_chunk: Some(candidate.to_string()),
-//                r#match: Some(is_match),
-//            });
-//        }
-
         pub fn record_invalid_hit(
             &mut self,
             range_index: usize,
@@ -333,6 +269,8 @@ mod instrumentation {
             candidate_length: usize,
             candidate: &str,
         ) {
+            self.range_invalids += 1;
+            self.global_invalids += 1;
             self.final_sum = global_sum;
 
             let range_progress = self.compute_range_progress(range_index, range_start, range_end);
@@ -412,7 +350,11 @@ mod instrumentation {
             });
         }
 
-        pub fn finalize_and_print(&self) {
+        pub fn finalize_and_print(&mut self, sum: i64) {
+            if let Some((range_index, start, end)) = self.last_range {
+                self.record_final_summary(range_index, start, end, sum);
+            }
+
             let json = serde_json::to_string(self).expect("Failed to serialize instrumentation");
             println!("{}", json);
         }
