@@ -3,13 +3,21 @@
 use common::load;
 
 fn main() {
-    println!("Day 6, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
+    println!(
+        "Day 6, part {}",
+        if cfg!(feature = "part2") { "2" } else { "1" }
+    );
 
     let lines = load::lines();
 
     if cfg!(feature = "part2") {
         // Find the length of the longest line to determine the number of columns.
-        let number_of_columns = lines.iter().take(lines.len() - 1).map(|line| line.len()).max().expect("No lines found");
+        let number_of_columns = lines
+            .iter()
+            .take(lines.len() - 1)
+            .map(|line| line.len())
+            .max()
+            .expect("No lines found");
 
         // For all but the last line, each column of text contains a number, one digit per line from highest
         // significance to lowest. Blanks are ignored. A column of all spaces (with the value 0) separates each list of
@@ -21,7 +29,7 @@ fn main() {
             for line in lines.iter().take(lines.len() - 1) {
                 let ch = line.chars().nth(c).unwrap_or(' ');
                 if ch != ' ' {
-                    value = value * 10 + ch.to_digit(10).expect("Invalid digit") as i64;                
+                    value = value * 10 + ch.to_digit(10).expect("Invalid digit") as i64;
                 }
             }
             if value == 0 {
@@ -41,13 +49,15 @@ fn main() {
         let mut operations = parse_operations(&lines[lines.len() - 1]);
         operations.reverse();
 
-        let sum = columns.iter().enumerate().map(|(i, column)| {
-            match operations[i] {
+        let sum = columns
+            .iter()
+            .enumerate()
+            .map(|(i, column)| match operations[i] {
                 '+' => column.iter().sum::<i64>(),
                 '*' => column.iter().product::<i64>(),
                 _ => panic!("Unknown operation"),
-            }
-        }).sum::<i64>();
+            })
+            .sum::<i64>();
 
         println!("Sum: {}", sum);
     } else {
@@ -71,21 +81,21 @@ fn main() {
         // The last line contains the operation to perform on each column.
         let operations = parse_operations(&lines[lines.len() - 1]);
 
-
-        let sum = columns.iter().enumerate().map(|(i, column)| {
-            match operations[i] {
+        let sum = columns
+            .iter()
+            .enumerate()
+            .map(|(i, column)| match operations[i] {
                 '+' => column.iter().sum::<i64>(),
                 '*' => column.iter().product::<i64>(),
                 _ => panic!("Unknown operation"),
-            }
-        }).sum::<i64>();
+            })
+            .sum::<i64>();
         println!("Sum: {}", sum);
     }
 }
 
 fn parse_operations(line: &str) -> Vec<char> {
-    line
-        .split_whitespace()
+    line.split_whitespace()
         .map(|s| s.chars().next().expect("No operation found"))
         .collect()
 }

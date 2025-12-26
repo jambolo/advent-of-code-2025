@@ -3,7 +3,10 @@
 use common::load;
 
 fn main() {
-    println!("Day 4, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
+    println!(
+        "Day 4, part {}",
+        if cfg!(feature = "part2") { "2" } else { "1" }
+    );
 
     let map = load::map();
 
@@ -15,11 +18,15 @@ fn main() {
 }
 
 fn part1(map: &[Vec<char>]) {
-    let count = map.iter().enumerate()
-        .map(|(y, row)| row.iter().enumerate()
-            .filter(|(x, cell)| **cell == '@' && count_neighbors(map, *x, y) < 4)
-            .count()
-        )
+    let count = map
+        .iter()
+        .enumerate()
+        .map(|(y, row)| {
+            row.iter()
+                .enumerate()
+                .filter(|(x, cell)| **cell == '@' && count_neighbors(map, *x, y) < 4)
+                .count()
+        })
         .sum::<usize>();
     println!("Cells with less than 4 neighbors: {}", count);
 }

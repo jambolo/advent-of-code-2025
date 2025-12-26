@@ -1,10 +1,13 @@
 // Advent of Code 2025, Day 11
 
-use std::collections::HashMap;
 use common::load;
+use std::collections::HashMap;
 
 fn main() {
-    println!("Day 11, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
+    println!(
+        "Day 11, part {}",
+        if cfg!(feature = "part2") { "2" } else { "1" }
+    );
 
     let lines = load::lines();
 
@@ -15,9 +18,14 @@ fn main() {
 
     let mut dag: HashMap<String, Vec<String>> = HashMap::new();
     for line in lines {
-        let (node_str, outputs_str) = line.split_once(':').unwrap();
+        let (node_str, outputs_str) = line
+            .split_once(':')
+            .expect("Failed to split line on ':' for node and outputs");
         let node = node_str.trim().to_string();
-        let outputs: Vec<String> = outputs_str.trim().split_whitespace().map(|s| s.to_string()).collect();
+        let outputs: Vec<String> = outputs_str
+            .split_whitespace()
+            .map(|s| s.to_string())
+            .collect();
         dag.insert(node, outputs);
     }
 
@@ -46,7 +54,9 @@ fn reduce(dag: &mut HashMap<String, Vec<String>>, excluded: &[&str]) {
         }
 
         for node in &to_remove {
-            dag.get_mut(node).unwrap().clear();
+            dag.get_mut(node)
+                .expect("Node to remove not found in dag")
+                .clear();
         }
 
         for outputs in dag.values_mut() {
@@ -71,7 +81,6 @@ fn part2(dag: &HashMap<String, Vec<String>>) {
     //     Count the number of paths from "dac" to "fft".
     //     Count the number of paths from "fft" to "out". Return the product.
 
-
     // Count the number of paths from "fft" to "dac".
     let fft_to_dac = {
         let mut dag = dag.clone();
@@ -82,7 +91,7 @@ fn part2(dag: &HashMap<String, Vec<String>>) {
 
     if fft_to_dac > 0 {
         // Count the number of paths from "dac" to "out".
-        let dac_to_out = count_paths(&dag, "dac", "out", "out");
+        let dac_to_out = count_paths(dag, "dac", "out", "out");
 
         // Count the number of paths from "svr" to "fft".
         let svr_to_fft = {
@@ -110,7 +119,7 @@ fn part2(dag: &HashMap<String, Vec<String>>) {
         };
 
         // Count the number of paths from "fft" to "out".
-        let fft_to_out = count_paths(&dag, "fft", "out", "out");
+        let fft_to_out = count_paths(dag, "fft", "out", "out");
 
         println!("Result: {}", svr_to_dac * dac_to_fft * fft_to_out);
     }

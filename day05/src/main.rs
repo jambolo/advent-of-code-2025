@@ -3,7 +3,10 @@
 use common::load;
 
 fn main() {
-    println!("Day 5, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
+    println!(
+        "Day 5, part {}",
+        if cfg!(feature = "part2") { "2" } else { "1" }
+    );
 
     let lines = load::lines();
 
@@ -13,7 +16,7 @@ fn main() {
     // Parse the fresh ingredient ranges
     let fresh_ranges: Vec<(i64, i64)> = sections
         .next()
-        .unwrap()
+        .expect("Missing fresh ingredient ranges section")
         .iter()
         .map(|line| parse_range(line))
         .collect();
@@ -21,9 +24,9 @@ fn main() {
     // Parse the ingredient IDs
     let ingredient_ids: Vec<i64> = sections
         .next()
-        .unwrap()
+        .expect("Missing ingredient IDs section")
         .iter()
-        .map(|line| line.parse().unwrap())
+        .map(|line| line.parse().expect("Failed to parse ingredient ID as i64"))
         .collect();
 
     if cfg!(feature = "part2") {
@@ -42,7 +45,9 @@ fn part1(fresh_ranges: &[(i64, i64)], ingredient_ids: &[i64]) {
 }
 
 fn is_fresh(fresh_ranges: &[(i64, i64)], id: i64) -> bool {
-    fresh_ranges.iter().any(|&(start, end)| id >= start && id <= end)
+    fresh_ranges
+        .iter()
+        .any(|&(start, end)| id >= start && id <= end)
 }
 
 fn part2(ranges: &[(i64, i64)]) {
@@ -53,7 +58,7 @@ fn part2(ranges: &[(i64, i64)]) {
     for (start, end) in sorted {
         if let Some(last) = merged.last_mut() {
             if start <= last.1 {
-                last.1 = last.1.max(end);  // Merge overlapping ranges
+                last.1 = last.1.max(end); // Merge overlapping ranges
                 continue; // Don't push a new range
             }
             merged.push((start, end));
@@ -64,6 +69,12 @@ fn part2(ranges: &[(i64, i64)]) {
 }
 
 fn parse_range(line: &str) -> (i64, i64) {
-    let (start, end) = line.split_once('-').unwrap();
-    (start.parse().unwrap(), end.parse().unwrap())
+    let (start, end) = line
+        .split_once('-')
+        .expect("Failed to split range line on '-'");
+
+    (
+        start.parse().expect("Failed to parse range start as i64"),
+        end.parse().expect("Failed to parse range end as i64"),
+    )
 }

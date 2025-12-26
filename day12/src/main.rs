@@ -12,9 +12,7 @@ impl Package {
         // Count the number of filled cells
         let area = base_shape.iter().flatten().filter(|&&c| c == '#').count();
 
-        Package{
-            area,
-        }
+        Package { area }
     }
 }
 
@@ -26,12 +24,15 @@ struct Region {
 }
 
 fn main() {
-    println!("Day 12, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
+    println!(
+        "Day 12, part {}",
+        if cfg!(feature = "part2") { "2" } else { "1" }
+    );
 
     let lines = load::lines();
     let (packages, regions) = parse_input(&lines);
 
-    // Count the number of regions that can fit all packages 
+    // Count the number of regions that can fit all packages
     let mut rejected: i64 = 0;
     let mut accepted: i64 = 0;
 
@@ -59,7 +60,10 @@ fn main() {
     }
     println!("Rejected: {}", rejected);
     println!("Accepted: {}", accepted);
-    println!("Undetermined: {}", regions.len() as i64 - accepted - rejected);
+    println!(
+        "Undetermined: {}",
+        regions.len() as i64 - accepted - rejected
+    );
 }
 
 fn parse_input(lines: &[String]) -> (Vec<Package>, Vec<Region>) {
@@ -77,7 +81,7 @@ fn parse_input(lines: &[String]) -> (Vec<Package>, Vec<Region>) {
         }
         let id = parse_package_header(&lines[i]);
         i += 1; // Move past header
-        let shape = parse_package_shape(&lines[i..i+3]);
+        let shape = parse_package_shape(&lines[i..i + 3]);
         i += 3; // Move past shape
         assert!(packages.len() == id);
         packages.push(Package::new(shape));
@@ -101,14 +105,17 @@ fn parse_region(line: &str) -> Region {
 }
 
 fn parse_region_counts(counts_str: &str) -> Vec<usize> {
-    counts_str.trim()
+    counts_str
         .split_whitespace()
         .map(|s| s.parse().expect("Invalid package count"))
         .collect()
 }
 
 fn parse_region_dimensions(dims_str: &str) -> (usize, usize) {
-    let (width_str, height_str) = dims_str.trim().split_once('x').expect("Invalid region dimensions");
+    let (width_str, height_str) = dims_str
+        .trim()
+        .split_once('x')
+        .expect("Invalid region dimensions");
     let width: usize = width_str.parse().expect("Invalid width");
     let height: usize = height_str.parse().expect("Invalid height");
     (width, height)
@@ -118,13 +125,13 @@ fn parse_package_shape(lines: &[String]) -> [[char; 3]; 3] {
     let mut grid = [['.'; 3]; 3];
     for (i, row) in lines.iter().enumerate() {
         let chars: Vec<char> = row.chars().collect();
-        for col in 0..3 {
-            grid[i][col] = chars[col];
-        }
+        grid[i].copy_from_slice(&chars[..3]);
     }
     grid
 }
 
 fn parse_package_header(line: &str) -> usize {
-    line.trim_end_matches(':').parse().expect("Invalid package id")
+    line.trim_end_matches(':')
+        .parse()
+        .expect("Invalid package id")
 }

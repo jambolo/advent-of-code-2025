@@ -3,7 +3,10 @@
 use common::load;
 
 fn main() {
-    println!("Day 2, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
+    println!(
+        "Day 2, part {}",
+        if cfg!(feature = "part2") { "2" } else { "1" }
+    );
 
     // Load the data
     let input = load::string();
@@ -11,19 +14,35 @@ fn main() {
     // Parse the input into a vector of ranges.
     let ranges = parse_ranges(&input);
 
+    if cfg!(feature = "part2") {
+        part2(&ranges);
+    } else {
+        part1(&ranges);
+    }
+}
+
+fn part2(ranges: &[(i64, i64)]) {
+    // Gonna solve this the naive way. Iterate through all numbers in each range and look for doubled digits.
+    let mut sum: i64 = 0;
+    for (start, end) in ranges.iter().copied() {
+        for number in start..=end {
+            let num_str = number.to_string();
+            if (2..=num_str.len()).any(|n| duplicated(&num_str, n)) {
+                sum += number;
+            }
+        }
+    }
+    println!("Sum: {}", sum);
+}
+
+fn part1(ranges: &[(i64, i64)]) {
     // Gonna solve this the naive way. Iterate through all numbers in each range and look for doubled digits.
     let mut sum: i64 = 0;
     for (start, end) in ranges {
-        for number in start..=end {
+        for number in *start..=*end {
             let num_str = number.to_string();
-            if cfg!(feature = "part2") {
-                if (2..=num_str.len()).any(|n| duplicated(&num_str, n)) {
-                    sum += number;
-                }
-            } else {
-                if duplicated(&num_str, 2) {
-                    sum += number;
-                }
+            if duplicated(&num_str, 2) {
+                sum += number;
             }
         }
     }
@@ -51,7 +70,7 @@ fn parse_ranges(input: &str) -> Vec<(i64, i64)> {
 fn duplicated(s: &str, n: usize) -> bool {
     let len = s.len();
     // Must split evenly into n parts
-    if len % n != 0 {
+    if !len.is_multiple_of(n) {
         return false;
     }
 
