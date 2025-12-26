@@ -13,3 +13,6 @@ Cargo.lock
 
 # Ignore IDE/editor config files
 .vscode/
+
+# Ignore agent files
+.claude/

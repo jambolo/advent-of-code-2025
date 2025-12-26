@@ -43,7 +43,8 @@ This one took some thinking and fenceposts were a problem. The fact that all edg
 
 ## Day 10
 
-Well, that escalated quickly! Still working on it ...
+Well, that escalated quickly! ...
+This one was actually fun because I got to try out a LP solver in Rust. However, I spent a *lot* of time reducing the size of problem before handing it to the solver, but it turned out that *none* of that work was necessary for this puzzle.
 
 ## Day 11
 

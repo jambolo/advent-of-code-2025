@@ -1,0 +1,12 @@
+[package]
+name = "day10"
+edition = "2024"
+
+[dependencies]
+common = { path = "../common" }
+itertools = "0.14"
+good_lp = { version = "1.14", features = ["coin_cbc"] }
+
+[features]
+part2 = []
+default = ["part2"]
