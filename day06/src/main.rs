@@ -7,21 +7,21 @@ fn main() {
 
     let lines = load::lines();
 
-    let mut columns: Vec<Vec<i64>> = Vec::new();
     if cfg!(feature = "part2") {
         // Find the length of the longest line to determine the number of columns.
-        let number_of_columns = lines.iter().take(lines.len() - 1).map(|line| line.len()).max().unwrap();
+        let number_of_columns = lines.iter().take(lines.len() - 1).map(|line| line.len()).max().expect("No lines found");
 
         // For all but the last line, each column of text contains a number, one digit per line from highest
         // significance to lowest. Blanks are ignored. A column of all spaces (with the value 0) separates each list of
         // numbers.
+        let mut columns: Vec<Vec<i64>> = Vec::new();
         let mut list: Vec<i64> = Vec::new();
-        for c in 0..number_of_columns {
+        for c in (0..number_of_columns).rev() {
             let mut value: i64 = 0;
             for line in lines.iter().take(lines.len() - 1) {
                 let ch = line.chars().nth(c).unwrap_or(' ');
                 if ch != ' ' {
-                    value = value * 10 + ch.to_digit(10).unwrap() as i64;                
+                    value = value * 10 + ch.to_digit(10).expect("Invalid digit") as i64;                
                 }
             }
             if value == 0 {
@@ -35,14 +35,30 @@ fn main() {
         if !list.is_empty() {
             columns.push(list);
         }
+
+        // The last line contains the operation to perform on each column.
+        // Since the columns were built in reverse order, reverse the operations as well.
+        let mut operations = parse_operations(&lines[lines.len() - 1]);
+        operations.reverse();
+
+        let sum = columns.iter().enumerate().map(|(i, column)| {
+            match operations[i] {
+                '+' => column.iter().sum::<i64>(),
+                '*' => column.iter().product::<i64>(),
+                _ => panic!("Unknown operation"),
+            }
+        }).sum::<i64>();
+
+        println!("Sum: {}", sum);
     } else {
         // Each line consists of a list of numbers separated by one or more spaces.
         // For all but the last line, process the input data. A vector of vectors of numbers is created such that each
         // vector contains the numbers in the corresponding column.
+        let mut columns: Vec<Vec<i64>> = Vec::new();
         for line in lines.iter().take(lines.len() - 1) {
             let numbers: Vec<i64> = line
                 .split_whitespace()
-                .map(|s| s.parse().unwrap())
+                .map(|s| s.parse().expect("Invalid number"))
                 .collect();
             for (i, &num) in numbers.iter().enumerate() {
                 if columns.len() <= i {
@@ -51,20 +67,25 @@ fn main() {
                 columns[i].push(num);
             }
         }
+
+        // The last line contains the operation to perform on each column.
+        let operations = parse_operations(&lines[lines.len() - 1]);
+
+
+        let sum = columns.iter().enumerate().map(|(i, column)| {
+            match operations[i] {
+                '+' => column.iter().sum::<i64>(),
+                '*' => column.iter().product::<i64>(),
+                _ => panic!("Unknown operation"),
+            }
+        }).sum::<i64>();
+        println!("Sum: {}", sum);
     }
+}
 
-    // The last line contains the operation to perform on each column.
-    let operations: Vec<char> = lines[lines.len() - 1]
+fn parse_operations(line: &str) -> Vec<char> {
+    line
         .split_whitespace()
-        .map(|s| s.chars().next().unwrap())
-        .collect();
-
-    let sum = columns.iter().enumerate().map(|(i, column)| {
-        match operations[i] {
-            '+' => column.iter().sum::<i64>(),
-            '*' => column.iter().product::<i64>(),
-            _ => panic!("Unknown operation"),
-        }
-    }).sum::<i64>();
-    println!("Sum: {}", sum);
+        .map(|s| s.chars().next().expect("No operation found"))
+        .collect()
 }
