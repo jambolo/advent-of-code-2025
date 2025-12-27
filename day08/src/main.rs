@@ -2,7 +2,11 @@
 
 use common::load;
 
+#[cfg(feature = "instrumented")]
+use instrumentation::Instrumentation;
+
 fn main() {
+    #[cfg(not(feature = "instrumented"))]
     println!(
         "Day 8, part {}",
         if cfg!(feature = "part2") { "2" } else { "1" }
@@ -56,10 +60,26 @@ fn main() {
     }
 
     if cfg!(feature = "part2") {
+        #[cfg(feature = "instrumented")]
+        let mut inst = Instrumentation::new(&locations);
+
         // Connect junction boxes until all are connected
         let mut index = 0;
         while circuits.len() > 1 {
-            connect(&mut circuits, distances[index].0);
+            let merged = connect(&mut circuits, distances[index].0);
+            #[cfg(not(feature = "instrumented"))]
+            let _ = merged; // Suppress unused variable warning
+
+            #[cfg(feature = "instrumented")]
+            if merged {
+                inst.record_connection(
+                    distances[index].0,
+                    distances[index].1,
+                    &circuits,
+                    circuits.len() == 1,
+                );
+            }
+
             index += 1;
         }
         // Print the product of the x coordinates of the last connected connection
@@ -67,7 +87,11 @@ fn main() {
         let from = connection.0;
         let to = connection.1;
         let result = locations[from].0 * locations[to].0;
+        #[cfg(not(feature = "instrumented"))]
         println!("Result: {}", result);
+
+        #[cfg(feature = "instrumented")]
+        inst.finalize(from, to, locations[from].0, locations[to].0, result);
     } else {
         // Connect the closest N junction boxes
         let n = 1000; // Number of boxes to connect
@@ -89,7 +113,7 @@ fn main() {
     }
 }
 
-fn connect(circuits: &mut Vec<Vec<usize>>, connection: (usize, usize)) {
+fn connect(circuits: &mut Vec<Vec<usize>>, connection: (usize, usize)) -> bool {
     let from = connection.0;
     let to = connection.1;
     let cf = containing_circuit(circuits, from).expect("From junction not found in any circuit");
@@ -100,9 +124,142 @@ fn connect(circuits: &mut Vec<Vec<usize>>, connection: (usize, usize)) {
         let mut ct_clone = circuits[ct].clone();
         circuits[cf].append(&mut ct_clone);
         circuits.remove(ct);
+        true
+    } else {
+        false
     }
 }
 
 fn containing_circuit(circuits: &[Vec<usize>], junction: usize) -> Option<usize> {
     circuits.iter().position(|c| c.contains(&junction))
+}
+
+#[cfg(feature = "instrumented")]
+mod instrumentation {
+    use serde::Serialize;
+
+    #[derive(Serialize)]
+    pub struct JunctionBox {
+        x: i64,
+        y: i64,
+        z: i64,
+    }
+
+    #[derive(Serialize)]
+    pub struct Frame {
+        frame_type: String,
+        connection_index: usize,
+        from_idx: usize,
+        to_idx: usize,
+        distance: f64,
+        circuits_remaining: usize,
+        circuit_assignments: Vec<usize>,
+    }
+
+    #[derive(Serialize)]
+    struct LogData {
+        boxes: Vec<JunctionBox>,
+        total_connections_needed: usize,
+        frames: Vec<Frame>,
+        final_from_idx: usize,
+        final_to_idx: usize,
+        final_from_x: i64,
+        final_to_x: i64,
+        answer: i64,
+    }
+
+    pub struct Instrumentation {
+        boxes: Vec<JunctionBox>,
+        frames: Vec<Frame>,
+        num_boxes: usize,
+        connection_count: usize,
+    }
+
+    impl Instrumentation {
+        pub fn new(locations: &[(i64, i64, i64)]) -> Self {
+            let boxes: Vec<JunctionBox> = locations
+                .iter()
+                .map(|(x, y, z)| JunctionBox {
+                    x: *x,
+                    y: *y,
+                    z: *z,
+                })
+                .collect();
+            let num_boxes = boxes.len();
+
+            // Create initial circuit assignments (each box in its own circuit)
+            let initial_assignments: Vec<usize> = (0..num_boxes).collect();
+
+            let initial_frame = Frame {
+                frame_type: "initial".to_string(),
+                connection_index: 0,
+                from_idx: 0,
+                to_idx: 0,
+                distance: 0.0,
+                circuits_remaining: num_boxes,
+                circuit_assignments: initial_assignments,
+            };
+
+            Self {
+                boxes,
+                frames: vec![initial_frame],
+                num_boxes,
+                connection_count: 0,
+            }
+        }
+
+        pub fn record_connection(
+            &mut self,
+            connection: (usize, usize),
+            distance: f64,
+            circuits: &[Vec<usize>],
+            is_final: bool,
+        ) {
+            self.connection_count += 1;
+
+            // Build circuit assignments array
+            let mut circuit_assignments = vec![0; self.num_boxes];
+            for (circuit_id, circuit) in circuits.iter().enumerate() {
+                for &box_idx in circuit {
+                    circuit_assignments[box_idx] = circuit_id;
+                }
+            }
+
+            let frame_type = if is_final { "final" } else { "connection" };
+
+            let frame = Frame {
+                frame_type: frame_type.to_string(),
+                connection_index: self.connection_count,
+                from_idx: connection.0,
+                to_idx: connection.1,
+                distance,
+                circuits_remaining: circuits.len(),
+                circuit_assignments,
+            };
+
+            self.frames.push(frame);
+        }
+
+        pub fn finalize(
+            self,
+            final_from_idx: usize,
+            final_to_idx: usize,
+            final_from_x: i64,
+            final_to_x: i64,
+            answer: i64,
+        ) {
+            let log_data = LogData {
+                total_connections_needed: self.num_boxes - 1,
+                boxes: self.boxes,
+                frames: self.frames,
+                final_from_idx,
+                final_to_idx,
+                final_from_x,
+                final_to_x,
+                answer,
+            };
+
+            println!("{}", serde_json::to_string(&log_data).unwrap());
+        }
+    }
 }
