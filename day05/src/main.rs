@@ -61,7 +61,7 @@ fn part2(ranges: &[(i64, i64)]) {
     let mut sorted = ranges.to_vec();
     #[cfg(feature = "instrumented")]
     inst.compute_sorted_indices(&sorted);
-    
+
     sorted.sort_unstable_by_key(|&(start, _)| start);
 
     #[cfg(feature = "instrumented")]
@@ -72,14 +72,13 @@ fn part2(ranges: &[(i64, i64)]) {
 
     let mut merged: Vec<(i64, i64)> = Vec::new();
     for (start, end) in sorted {
-        if let Some(last) = merged.last_mut() {
-            if start <= last.1 {
-                last.1 = last.1.max(end); // Merge overlapping ranges
-                #[cfg(feature = "instrumented")]
-                inst.emit_merge_step("merged");
-                continue; // Don't push a new range
-            }
-            merged.push((start, end));
+        if let Some(last) = merged.last_mut()
+            && start <= last.1 + 1
+        {
+            last.1 = last.1.max(end); // Merge overlapping ranges
+            #[cfg(feature = "instrumented")]
+            inst.emit_merge_step("merged");
+            continue; // Don't push a new range
         }
         merged.push((start, end));
         #[cfg(feature = "instrumented")]
@@ -174,7 +173,6 @@ mod instrumentation {
             self.sorted_indices = indexed.iter().map(|&(i, _)| i).collect();
         }
 
-
         pub fn emit_initial(&mut self) {
             let ranges = self.ranges_to_json_with_indices(&self.original_ranges, &(0..self.original_ranges.len()).collect::<Vec<_>>());
             self.frames.push(Frame {
@@ -189,7 +187,11 @@ mod instrumentation {
         }
 
         pub fn emit_sorted(&mut self) {
-            let sorted_ranges: Vec<(i64, i64)> = self.sorted_indices.iter().map(|&i| self.original_ranges[i]).collect();
+            let sorted_ranges: Vec<(i64, i64)> = self
+                .sorted_indices
+                .iter()
+                .map(|&i| self.original_ranges[i])
+                .collect();
             self.frames.push(Frame {
                 frame_type: "sorted".to_string(),
                 step_index: 0,
@@ -256,11 +258,11 @@ mod instrumentation {
             for (i, &orig_idx) in self.sorted_indices.iter().enumerate() {
                 if i >= self.processed_count { break; }
                 let (start, end) = self.original_ranges[orig_idx];
-                if let Some(last) = merged.last_mut() {
-                    if start <= last.1 + 1 {
-                        last.1 = last.1.max(end);
-                        continue;
-                    }
+                if let Some(last) = merged.last_mut()
+                    && start <= last.1 + 1
+                {
+                    last.1 = last.1.max(end);
+                    continue;
                 }
                 merged.push((start, end, orig_idx));
             }

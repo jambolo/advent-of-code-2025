@@ -28,7 +28,7 @@ fn main() {
 
     #[cfg(feature = "instrumented")]
     instrumentation::record_initial(&mut history, lines.len(), current_position, password);
-    
+
     for line in lines {
         // Parse the direction and distance. Format is e.g. "R2", "L3".
         let (turn, distance_str) = line.split_at(1);
@@ -225,6 +225,6 @@ mod instrumentation {
             "total_rotations": history.total_rotations,
             "final_password": password
         });
-        println!("{}", log.to_string());
+        println!("{}", log);
     }
 }

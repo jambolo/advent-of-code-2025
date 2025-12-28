@@ -55,7 +55,7 @@ fn neighboring_cells(map: &[Vec<char>], x: usize, y: usize) -> impl Iterator<Ite
 
 fn part2(map: &[Vec<char>]) {
     #[cfg(feature = "instrumented")]
-    let mut inst = Instrumentation::new(&map);
+    let mut inst = Instrumentation::new(map);
 
     let mut new_map = map.to_vec();
     let height = new_map.len();

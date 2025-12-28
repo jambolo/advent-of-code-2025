@@ -59,7 +59,7 @@ fn part2(map: &[Vec<char>]) {
     use std::collections::HashMap;
 
     #[cfg(feature = "instrumented")]
-    let mut inst = instrumentation::Instrumentation::new(&map);
+    let mut inst = instrumentation::Instrumentation::new(map);
 
     let width = map[0].len();
 

@@ -42,14 +42,7 @@ fn part2(ranges: &[(i64, i64)]) {
             let len = num_str.len();
 
             #[cfg(feature = "instrumented")]
-            instrumentation.maybe_scan_tick(
-                range_index,
-                start,
-                end,
-                number,
-                &num_str,
-                sum,
-            );
+            instrumentation.maybe_scan_tick(range_index, start, end, number, &num_str, sum);
 
             for repeat_count in 2..=len {
                 if len % repeat_count != 0 {
@@ -66,11 +59,8 @@ fn part2(ranges: &[(i64, i64)]) {
 
                     #[cfg(feature = "instrumented")]
                     instrumentation.record_invalid_hit(
-                        range_index,
-                        start,
-                        end,
+                        (range_index, (start, end)),
                         number,
-                        &num_str,
                         sum,
                         repeat_count,
                         candidate_length,
@@ -171,7 +161,9 @@ mod instrumentation {
                 puzzle_day: 2,
                 part: 2,
                 sampling_stride: Some(SAMPLING_STRIDE),
-                ranges: ranges.iter().enumerate()
+                ranges: ranges
+                    .iter()
+                    .enumerate()
                     .map(|(index, (start, end))| RangeDescriptor {
                         index,
                         start: *start,
@@ -207,14 +199,14 @@ mod instrumentation {
             range_start: i64,
             range_end: i64,
             number: i64,
-            digits: &str,
             global_sum: i64,
         ) {
-            if (self.inspected + SAMPLING_STRIDE - 1) % SAMPLING_STRIDE != 0 {
+            if !(self.inspected + SAMPLING_STRIDE - 1).is_multiple_of(SAMPLING_STRIDE) {
                 return;
             }
 
-            let range_progress = self.compute_range_progress(number as usize, range_start, range_end);
+            let range_progress =
+                self.compute_range_progress(number as usize, range_start, range_end);
             self.frames.push(Frame {
                 frame_type: "scan_tick",
                 range_index,
@@ -227,7 +219,7 @@ mod instrumentation {
                 inspected: Some(self.inspected),
                 message: None,
                 number: Some(number),
-                digits: Some(digits.to_string()),
+                digits: Some(digits),
                 repeat_count: None,
                 chunk_length: None,
                 candidate_chunk: None,
@@ -265,11 +257,8 @@ mod instrumentation {
 
         pub fn record_invalid_hit(
             &mut self,
-            range_index: usize,
-            range_start: i64,
-            range_end: i64,
+            range: (usize, (i64, i64)),
             number: i64,
-            digits: &str,
             global_sum: i64,
             repeat_count: usize,
             candidate_length: usize,
@@ -279,12 +268,13 @@ mod instrumentation {
             self.global_invalids += 1;
             self.final_sum = global_sum;
 
-            let range_progress = self.compute_range_progress(range_index, range_start, range_end);
+            let digits = number.to_string();
+            let range_progress = self.compute_range_progress(range.0, range.1.0, range.1.1);
             self.frames.push(Frame {
                 frame_type: "invalid_hit",
-                range_index,
-                range_start,
-                range_end,
+                range_index: range.0,
+                range_start: range.1.0,
+                range_end: range.1.1,
                 range_progress,
                 global_sum,
                 global_invalids: self.global_invalids,
@@ -292,7 +282,7 @@ mod instrumentation {
                 inspected: Some(self.inspected),
                 message: None,
                 number: Some(number),
-                digits: Some(digits.to_string()),
+                digits: Some(digits),
                 repeat_count: Some(repeat_count),
                 chunk_length: Some(candidate_length),
                 candidate_chunk: Some(candidate.to_string()),
