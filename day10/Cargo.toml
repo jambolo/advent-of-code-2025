@@ -6,7 +6,10 @@ edition = "2024"
 common = { path = "../common" }
 itertools = "0.14"
 good_lp = { version = "1.14", features = ["coin_cbc"] }
+serde = { version = "1", features = ["derive"], optional = true }
+serde_json = { version = "1", optional = true }
 
 [features]
 part2 = []
 default = ["part2"]
+instrumented = ["part2", "serde", "serde_json"]

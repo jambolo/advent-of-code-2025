@@ -9,6 +9,7 @@ mod part1;
 mod part2;
 
 fn main() {
+    #[cfg(not(feature = "instrumented"))]
     println!(
         "Day 10, part {}",
         if cfg!(feature = "part2") { "2" } else { "1" }
