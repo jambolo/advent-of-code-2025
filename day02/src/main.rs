@@ -4,7 +4,10 @@ use common::load;
 
 fn main() {
     #[cfg(not(feature = "instrumented"))]
-    println!("Day 2, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
+    println!(
+        "Day 2, part {}",
+        if cfg!(feature = "part2") { "2" } else { "1" }
+    );
 
     // Load the data
     let input = load::string();
@@ -12,8 +15,7 @@ fn main() {
     // Parse the input into a vector of ranges.
     let ranges = parse_ranges(&input);
 
-    if cfg!(feature = "part2")
-    {
+    if cfg!(feature = "part2") {
         part2(&ranges);
     } else {
         part1(&ranges);
@@ -24,6 +26,7 @@ fn part2(ranges: &[(i64, i64)]) {
     #[cfg(feature = "instrumented")]
     let mut instrumentation = instrumentation::Instrumentation::new(ranges);
 
+    // Gonna solve this the naive way. Iterate through all numbers in each range and look for doubled digits.
     let mut sum: i64 = 0;
     for (range_index, (start, end)) in ranges.iter().copied().enumerate() {
         #[cfg(not(feature = "instrumented"))]
@@ -95,11 +98,12 @@ fn part2(ranges: &[(i64, i64)]) {
 }
 
 fn part1(ranges: &[(i64, i64)]) {
+    // Gonna solve this the naive way. Iterate through all numbers in each range and look for doubled digits.
     let mut sum: i64 = 0;
     for (start, end) in ranges {
         for number in *start..=*end {
             let num_str = number.to_string();
-            if duplicated(&num_str,num_str.len() / 2).is_some() {
+            if duplicated(&num_str, 2) {
                 sum += number;
             }
         }
@@ -124,17 +128,19 @@ fn parse_ranges(input: &str) -> Vec<(i64, i64)> {
         .collect()
 }
 
-/// Returns true if all parts of size n are the same
-fn duplicated(s: &str, n: usize) -> Option<String> {
-    let first_chunk = &s.as_bytes()[..n];
-    let yes = s.as_bytes()
-        .chunks(n)
-        .all(|chunk| chunk == first_chunk);
-    if yes {
-        Some(s[..n].to_string())
-    } else {
-        None
+/// Returns true if all n parts are the same
+fn duplicated(s: &str, n: usize) -> bool {
+    let len = s.len();
+    // Must split evenly into n parts
+    if !len.is_multiple_of(n) {
+        return false;
     }
+
+    let part_len = len / n;
+    let first_chunk = &s.as_bytes()[..part_len];
+    s.as_bytes()
+        .chunks(part_len)
+        .all(|chunk| chunk == first_chunk)
 }
 
 #[cfg(feature = "instrumented")]

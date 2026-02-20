@@ -7,7 +7,10 @@ use instrumentation::Instrumentation;
 
 fn main() {
     #[cfg(not(feature = "instrumented"))]
-    println!("Day 4, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
+    println!(
+        "Day 4, part {}",
+        if cfg!(feature = "part2") { "2" } else { "1" }
+    );
 
     let map = load::map();
 
@@ -19,11 +22,15 @@ fn main() {
 }
 
 fn part1(map: &[Vec<char>]) {
-    let count = map.iter().enumerate()
-        .map(|(y, row)| row.iter().enumerate()
-            .filter(|(x, cell)| **cell == '@' && count_neighbors(map, *x, y) < 4)
-            .count()
-        )
+    let count = map
+        .iter()
+        .enumerate()
+        .map(|(y, row)| {
+            row.iter()
+                .enumerate()
+                .filter(|(x, cell)| **cell == '@' && count_neighbors(map, *x, y) < 4)
+                .count()
+        })
         .sum::<usize>();
     println!("Cells with less than 4 neighbors: {}", count);
 }
@@ -51,7 +58,6 @@ fn part2(map: &[Vec<char>]) {
     let mut inst = Instrumentation::new(&map);
 
     let mut new_map = map.to_vec();
-
     let height = new_map.len();
     let width = new_map[0].len();
 
@@ -59,7 +65,6 @@ fn part2(map: &[Vec<char>]) {
     inst.emit_initial(&new_map);
 
     // Let's try the naive approach
-
     let mut removed = 0;
     loop {
         #[cfg(feature = "instrumented")]
@@ -76,7 +81,6 @@ fn part2(map: &[Vec<char>]) {
                 }
             }
         }
-
         if removed == previous_removed {
             #[cfg(feature = "instrumented")]
             inst.emit_final(&new_map);

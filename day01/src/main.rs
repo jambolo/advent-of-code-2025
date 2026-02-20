@@ -7,7 +7,10 @@ const P: i32 = 100;
 
 fn main() {
     #[cfg(not(feature = "instrumented"))]
-    println!("Day 1, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
+    println!(
+        "Day 1, part {}",
+        if cfg!(feature = "part2") { "2" } else { "1" }
+    );
 
     // Load the data
     let lines = load::lines();
@@ -59,7 +62,7 @@ fn main() {
                     instrumentation::record_zero_passes(&mut history, 1, password, &line, distance, turn);
                     password += 1;
                 },
-                "R" | "L" => {},
+                "R" | "L" => {}
                 _ => panic!("Invalid turn direction: {}", turn),
             }
         }

@@ -2,21 +2,38 @@
 
 use common::load;
 
+type Edge = ((usize, usize), (usize, usize));
+type Rect = ((usize, usize), (usize, usize));
+
 fn main() {
-    println!("Day 9, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
+    println!(
+        "Day 9, part {}",
+        if cfg!(feature = "part2") { "2" } else { "1" }
+    );
 
     // Load the locations of the corners.
     let corners: Vec<(usize, usize)> = load::lines()
         .iter()
         .map(|line| {
-            let (x, y) = line.split_once(',').unwrap();
-            (x.parse().unwrap(), y.parse().unwrap())
+            let (x, y) = line
+                .split_once(',')
+                .expect("Failed to split line on ',' for corner coordinates");
+            (
+                x.parse().expect("Failed to parse x coordinate as usize"),
+                y.parse().expect("Failed to parse y coordinate as usize"),
+            )
         })
         .collect();
 
-        // List of edges of the region with normalized vertex order.
+    // List of edges of the region with normalized vertex order.
     let edges: Vec<_> = consecutive_pairs(&corners)
-        .map(|(v0, v1)| if v0.0 < v1.0 || v0.1 < v1.1 { (*v0, *v1) } else { (*v1, *v0) })
+        .map(|(v0, v1)| {
+            if v0.0 < v1.0 || v0.1 < v1.1 {
+                (*v0, *v1)
+            } else {
+                (*v1, *v0)
+            }
+        })
         .collect();
 
     // List of horizontal edges with normalized vertex order.
@@ -47,10 +64,13 @@ fn main() {
     rectangles.sort_by_key(|&(_, area)| area);
 
     // Output the area of the largest rectangle.
-    println!("Largest area: {}", rectangles.last().unwrap().1);
+    println!(
+        "Largest area: {}",
+        rectangles.last().expect("No rectangles found").1
+    );
 }
 
-fn crosses(rect: &((usize, usize), (usize, usize)), v0: &(usize, usize), v1: &(usize, usize)) -> bool {
+fn crosses(rect: &Rect, v0: &(usize, usize), v1: &(usize, usize)) -> bool {
     let (x0, y0) = *v0;
     let (x1, y1) = *v1;
     let ((cx0, cy0), (cx1, cy1)) = *rect;
@@ -72,18 +92,14 @@ fn crosses(rect: &((usize, usize), (usize, usize)), v0: &(usize, usize), v1: &(u
     false
 }
 
-fn fully_contained(
-    edges: &[((usize, usize), (usize, usize))],
-    horizontal_edges: &[((usize, usize), (usize, usize))],
-    rect: &((usize, usize), (usize, usize))
-) -> bool {
+fn fully_contained(edges: &[Edge], horizontal_edges: &[Edge], rect: &Rect) -> bool {
     // Check that no region edges cross any of the rect edges.
     if edges.iter().any(|(v0, v1)| crosses(rect, v0, v1)) {
         return false;
     }
 
     // A single row or column is always contained.
-    
+
     // Check that an interior point of the rectangle is inside the region.
     let test_x = rect.0.0.min(rect.1.0) as f64 + 0.5;
     let test_y = rect.0.1.min(rect.1.1) as f64 + 0.5;
@@ -104,5 +120,8 @@ fn fully_contained(
 }
 
 fn consecutive_pairs<T>(slice: &[T]) -> impl Iterator<Item = (&T, &T)> {
-    slice.iter().zip(slice.iter().cycle().skip(1)).take(slice.len())
+    slice
+        .iter()
+        .zip(slice.iter().cycle().skip(1))
+        .take(slice.len())
 }

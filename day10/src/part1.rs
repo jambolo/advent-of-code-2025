@@ -2,8 +2,8 @@ use itertools::Itertools;
 
 #[derive(Debug)]
 pub struct Machine {
-    pub final_state: u64,   // binary representation of final state
-    pub buttons: Vec<u64>,       // binary representation of button effects
+    pub final_state: u64,  // binary representation of final state
+    pub buttons: Vec<u64>, // binary representation of button effects
 }
 
 pub fn part1(machines: Vec<Machine>) {
@@ -15,9 +15,7 @@ pub fn part1(machines: Vec<Machine>) {
         for k in 1..=machine.buttons.len() {
             let combinations = machine.buttons.iter().combinations(k);
             for combo in combinations {
-                let result = combo.iter().fold(0, |state, &button| {
-                    state ^ *button
-                });
+                let result = combo.iter().fold(0, |state, &button| state ^ *button);
                 if result == machine.final_state {
                     found = true;
                     break;
@@ -56,15 +54,20 @@ pub fn parse_machine(line: &str) -> Machine {
 // Parse final state
 fn parse_final_state(s: &str) -> u64 {
     let trimmed = s.trim_matches(&['[', ']'][..]);
-    trimmed.chars().rev().fold(0, |state, c| {
-        (state << 1) | if c == '#' {1} else {0}
-    })
+    trimmed
+        .chars()
+        .rev()
+        .fold(0, |state, c| (state << 1) | if c == '#' { 1 } else { 0 })
 }
 
 // Parse button
 fn parse_button(s: &str) -> u64 {
     let trimmed = s.trim_matches(&['(', ')'][..]);
-    trimmed.split(',').map(|num| num.parse::<u64>().unwrap()).fold(0, |state, num| {
-        state | (1 << num)
-    })
+    trimmed
+        .split(',')
+        .map(|num| {
+            num.parse::<u64>()
+                .expect("Failed to parse button index as u64")
+        })
+        .fold(0, |state, num| state | (1 << num))
 }

@@ -7,7 +7,10 @@ use instrumentation::Instrumentation;
 
 fn main() {
     #[cfg(not(feature = "instrumented"))]
-    println!("Day 6, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
+    println!(
+        "Day 6, part {}",
+        if cfg!(feature = "part2") { "2" } else { "1" }
+    );
 
     let lines = load::lines();
 
@@ -16,7 +19,12 @@ fn main() {
         let mut inst = Instrumentation::new(&lines);
 
         // Find the length of the longest line to determine the number of columns.
-        let number_of_columns = lines.iter().take(lines.len() - 1).map(|line| line.len()).max().expect("No lines found");
+        let number_of_columns = lines
+            .iter()
+            .take(lines.len() - 1)
+            .map(|line| line.len())
+            .max()
+            .expect("No lines found");
 
         // For all but the last line, each column of text contains a number, one digit per line from highest
         // significance to lowest. Blanks are ignored. A column of all spaces (with the value 0) separates each list of
@@ -96,14 +104,15 @@ fn main() {
         // The last line contains the operation to perform on each column.
         let operations = parse_operations(&lines[lines.len() - 1]);
 
-
-        let sum = columns.iter().enumerate().map(|(i, column)| {
-            match operations[i] {
+        let sum = columns
+            .iter()
+            .enumerate()
+            .map(|(i, column)| match operations[i] {
                 '+' => column.iter().sum::<i64>(),
                 '*' => column.iter().product::<i64>(),
                 _ => panic!("Unknown operation"),
-            }
-        }).sum::<i64>();
+            })
+            .sum::<i64>();
         println!("Sum: {}", sum);
     }
 }

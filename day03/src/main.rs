@@ -4,7 +4,10 @@ use common::load;
 
 fn main() {
     #[cfg(not(feature = "instrumented"))]
-    println!("Day 3, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
+    println!(
+        "Day 3, part {}",
+        if cfg!(feature = "part2") { "2" } else { "1" }
+    );
 
     let banks = load::lines();
 
@@ -26,7 +29,6 @@ fn main() {
 
         let mut start = 0; // Current search start index
         let mut j: u64 = 0;
-
         for c in 0..count {
             let remaining_picks = count - c;
             let (i, v) = next_digit(&numbers[start..], remaining_picks);
@@ -80,18 +82,14 @@ fn main() {
     instrumentation.finalize(joltage);
 }
 
-// Find the first number such that none of the following numbers are greater. Exclude the last n-1 numbers.
+// Find the first number such that none of the following numbers are greater. Exclude the last n numbers.
 fn next_digit(numbers: &[u32], n: usize) -> (usize, u32) {
     numbers
         .iter()
-        .take(numbers.len().saturating_sub(n - 1))
+        .take(numbers.len().saturating_sub(n))
         .enumerate()
         .fold((0, numbers[0]), |(max_i, max_v), (i, &v)| {
-            if v > max_v {
-                (i, v)
-            } else {
-                (max_i, max_v)
-            }
+            if v > max_v { (i, v) } else { (max_i, max_v) }
         })
 }
 

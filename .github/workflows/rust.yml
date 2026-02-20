@@ -2,9 +2,9 @@ name: Rust
 
 on:
   push:
-    branches: [ "develop", "master", "feature/**" ]
+    branches: [ "master", "instrumented" ]
   pull_request:
-    branches: [ "develop", "master" ]
+    branches: [ "master", "instrumented" ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -15,8 +15,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+
     - name: Checkout
       uses: actions/checkout@v5
+
+    - name: Install CBC solver
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y coinor-libcbc-dev coinor-libclp-dev
 
     - name: Setup Rust toolchain
       uses: actions-rust-lang/setup-rust-toolchain@v1
