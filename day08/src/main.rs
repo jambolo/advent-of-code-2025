@@ -3,10 +3,7 @@
 use common::load;
 
 fn main() {
-    println!(
-        "Day 8, part {}",
-        if cfg!(feature = "part2") { "2" } else { "1" }
-    );
+    println!("Day 8, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
 
     // Load the locations from the input file.
     let lines = load::lines();

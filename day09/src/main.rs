@@ -6,10 +6,7 @@ type Edge = ((usize, usize), (usize, usize));
 type Rect = ((usize, usize), (usize, usize));
 
 fn main() {
-    println!(
-        "Day 9, part {}",
-        if cfg!(feature = "part2") { "2" } else { "1" }
-    );
+    println!("Day 9, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
 
     // Load the locations of the corners.
     let corners: Vec<(usize, usize)> = load::lines()
@@ -27,21 +24,11 @@ fn main() {
 
     // List of edges of the region with normalized vertex order.
     let edges: Vec<_> = consecutive_pairs(&corners)
-        .map(|(v0, v1)| {
-            if v0.0 < v1.0 || v0.1 < v1.1 {
-                (*v0, *v1)
-            } else {
-                (*v1, *v0)
-            }
-        })
+        .map(|(v0, v1)| if v0.0 < v1.0 || v0.1 < v1.1 { (*v0, *v1) } else { (*v1, *v0) })
         .collect();
 
     // List of horizontal edges with normalized vertex order.
-    let horizontal_edges: Vec<_> = edges
-        .iter()
-        .filter(|(v0, v1)| v0.1 == v1.1)
-        .copied()
-        .collect();
+    let horizontal_edges: Vec<_> = edges.iter().filter(|(v0, v1)| v0.1 == v1.1).copied().collect();
 
     // Create a list of all possible rectangles and their areas.
     let mut rectangles = Vec::new();
@@ -64,10 +51,7 @@ fn main() {
     rectangles.sort_by_key(|&(_, area)| area);
 
     // Output the area of the largest rectangle.
-    println!(
-        "Largest area: {}",
-        rectangles.last().expect("No rectangles found").1
-    );
+    println!("Largest area: {}", rectangles.last().expect("No rectangles found").1);
 }
 
 fn crosses(rect: &Rect, v0: &(usize, usize), v1: &(usize, usize)) -> bool {
@@ -120,8 +104,5 @@ fn fully_contained(edges: &[Edge], horizontal_edges: &[Edge], rect: &Rect) -> bo
 }
 
 fn consecutive_pairs<T>(slice: &[T]) -> impl Iterator<Item = (&T, &T)> {
-    slice
-        .iter()
-        .zip(slice.iter().cycle().skip(1))
-        .take(slice.len())
+    slice.iter().zip(slice.iter().cycle().skip(1)).take(slice.len())
 }

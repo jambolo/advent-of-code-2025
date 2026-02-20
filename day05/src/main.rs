@@ -3,10 +3,7 @@
 use common::load;
 
 fn main() {
-    println!(
-        "Day 5, part {}",
-        if cfg!(feature = "part2") { "2" } else { "1" }
-    );
+    println!("Day 5, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
 
     let lines = load::lines();
 
@@ -37,17 +34,12 @@ fn main() {
 }
 
 fn part1(fresh_ranges: &[(i64, i64)], ingredient_ids: &[i64]) {
-    let count = ingredient_ids
-        .iter()
-        .filter(|&&id| is_fresh(fresh_ranges, id))
-        .count();
+    let count = ingredient_ids.iter().filter(|&&id| is_fresh(fresh_ranges, id)).count();
     println!("Number of fresh ingredients: {}", count);
 }
 
 fn is_fresh(fresh_ranges: &[(i64, i64)], id: i64) -> bool {
-    fresh_ranges
-        .iter()
-        .any(|&(start, end)| id >= start && id <= end)
+    fresh_ranges.iter().any(|&(start, end)| id >= start && id <= end)
 }
 
 fn part2(ranges: &[(i64, i64)]) {
@@ -56,22 +48,20 @@ fn part2(ranges: &[(i64, i64)]) {
 
     let mut merged: Vec<(i64, i64)> = Vec::new();
     for (start, end) in sorted {
-        if let Some(last) = merged.last_mut() {
-            if start <= last.1 {
-                last.1 = last.1.max(end); // Merge overlapping ranges
-                continue; // Don't push a new range
-            }
-            merged.push((start, end));
+        if let Some(last) = merged.last_mut()
+            && start <= last.1
+        {
+            last.1 = last.1.max(end); // Merge overlapping ranges
+            continue;
         }
+        merged.push((start, end));
     }
     let total_fresh: i64 = merged.iter().map(|&(start, end)| end - start + 1).sum();
     println!("Total number of fresh ingredients: {}", total_fresh);
 }
 
 fn parse_range(line: &str) -> (i64, i64) {
-    let (start, end) = line
-        .split_once('-')
-        .expect("Failed to split range line on '-'");
+    let (start, end) = line.split_once('-').expect("Failed to split range line on '-'");
 
     (
         start.parse().expect("Failed to parse range start as i64"),

@@ -24,10 +24,7 @@ struct Region {
 }
 
 fn main() {
-    println!(
-        "Day 12, part {}",
-        if cfg!(feature = "part2") { "2" } else { "1" }
-    );
+    println!("Day 12, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
 
     let lines = load::lines();
     let (packages, regions) = parse_input(&lines);
@@ -60,10 +57,7 @@ fn main() {
     }
     println!("Rejected: {}", rejected);
     println!("Accepted: {}", accepted);
-    println!(
-        "Undetermined: {}",
-        regions.len() as i64 - accepted - rejected
-    );
+    println!("Undetermined: {}", regions.len() as i64 - accepted - rejected);
 }
 
 fn parse_input(lines: &[String]) -> (Vec<Package>, Vec<Region>) {
@@ -97,11 +91,7 @@ fn parse_region(line: &str) -> Region {
     let (dims_str, counts_str) = line.split_once(':').expect("Invalid region format");
     let (width, height) = parse_region_dimensions(dims_str);
     let counts = parse_region_counts(counts_str);
-    Region {
-        width,
-        height,
-        counts,
-    }
+    Region { width, height, counts }
 }
 
 fn parse_region_counts(counts_str: &str) -> Vec<usize> {
@@ -112,10 +102,7 @@ fn parse_region_counts(counts_str: &str) -> Vec<usize> {
 }
 
 fn parse_region_dimensions(dims_str: &str) -> (usize, usize) {
-    let (width_str, height_str) = dims_str
-        .trim()
-        .split_once('x')
-        .expect("Invalid region dimensions");
+    let (width_str, height_str) = dims_str.trim().split_once('x').expect("Invalid region dimensions");
     let width: usize = width_str.parse().expect("Invalid width");
     let height: usize = height_str.parse().expect("Invalid height");
     (width, height)
@@ -131,7 +118,5 @@ fn parse_package_shape(lines: &[String]) -> [[char; 3]; 3] {
 }
 
 fn parse_package_header(line: &str) -> usize {
-    line.trim_end_matches(':')
-        .parse()
-        .expect("Invalid package id")
+    line.trim_end_matches(':').parse().expect("Invalid package id")
 }

@@ -3,10 +3,7 @@
 use common::load;
 
 fn main() {
-    println!(
-        "Day 2, part {}",
-        if cfg!(feature = "part2") { "2" } else { "1" }
-    );
+    println!("Day 2, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
 
     // Load the data
     let input = load::string();
@@ -76,7 +73,5 @@ fn duplicated(s: &str, n: usize) -> bool {
 
     let part_len = len / n;
     let first_chunk = &s.as_bytes()[..part_len];
-    s.as_bytes()
-        .chunks(part_len)
-        .all(|chunk| chunk == first_chunk)
+    s.as_bytes().chunks(part_len).all(|chunk| chunk == first_chunk)
 }

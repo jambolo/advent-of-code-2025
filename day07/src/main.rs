@@ -3,10 +3,7 @@
 use common::load;
 
 fn main() {
-    println!(
-        "Day 7, part {}",
-        if cfg!(feature = "part2") { "2" } else { "1" }
-    );
+    println!("Day 7, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
 
     let map = load::map();
 
@@ -75,9 +72,7 @@ fn part2(map: Vec<Vec<char>>) {
         // Scan each beam column for splitters in this row
         for x in timelines.keys().cloned().collect::<Vec<_>>() {
             if row[x] == '^' {
-                let count = timelines
-                    .remove(&x)
-                    .expect("Timeline key not found during removal");
+                let count = timelines.remove(&x).expect("Timeline key not found during removal");
                 if x > 0 {
                     *timelines.entry(x - 1).or_insert(0) += count;
                 }

@@ -67,23 +67,13 @@ fn solve_lp(b_matrix: &[Vec<i32>], j_vector: &[i32]) -> Vec<i32> {
     let m = b_matrix.len(); // Number of rows
     let n = b_matrix[0].len(); // Number of columns
 
-    assert!(
-        j_vector.len() == n,
-        "Joltage vector size must match number of columns in B"
-    );
+    assert!(j_vector.len() == n, "Joltage vector size must match number of columns in B");
 
     // Define the Variables
     let mut vars = variables!();
     // We create a vector of variables, each >= 0 and Integer
     let x: Vec<_> = (0..m)
-        .map(|i| {
-            vars.add(
-                good_lp::variable()
-                    .min(0)
-                    .integer()
-                    .name(format!("x_{}", i)),
-            )
-        })
+        .map(|i| vars.add(good_lp::variable().min(0).integer().name(format!("x_{}", i))))
         .collect();
 
     // Define the Objective Function (Minimize the sum of X)

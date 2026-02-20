@@ -4,10 +4,7 @@ use common::load;
 use std::collections::HashMap;
 
 fn main() {
-    println!(
-        "Day 11, part {}",
-        if cfg!(feature = "part2") { "2" } else { "1" }
-    );
+    println!("Day 11, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
 
     let lines = load::lines();
 
@@ -22,10 +19,7 @@ fn main() {
             .split_once(':')
             .expect("Failed to split line on ':' for node and outputs");
         let node = node_str.trim().to_string();
-        let outputs: Vec<String> = outputs_str
-            .split_whitespace()
-            .map(|s| s.to_string())
-            .collect();
+        let outputs: Vec<String> = outputs_str.split_whitespace().map(|s| s.to_string()).collect();
         dag.insert(node, outputs);
     }
 
@@ -41,10 +35,7 @@ fn reduce(dag: &mut HashMap<String, Vec<String>>, excluded: &[&str]) {
         let out = "out";
         let mut to_remove = Vec::new();
         for (node, outputs) in dag.iter() {
-            if !outputs.is_empty()
-                && !excluded.contains(&node.as_str())
-                && outputs.iter().all(|o| o == out)
-            {
+            if !outputs.is_empty() && !excluded.contains(&node.as_str()) && outputs.iter().all(|o| o == out) {
                 to_remove.push(node.clone());
             }
         }
@@ -54,9 +45,7 @@ fn reduce(dag: &mut HashMap<String, Vec<String>>, excluded: &[&str]) {
         }
 
         for node in &to_remove {
-            dag.get_mut(node)
-                .expect("Node to remove not found in dag")
-                .clear();
+            dag.get_mut(node).expect("Node to remove not found in dag").clear();
         }
 
         for outputs in dag.values_mut() {

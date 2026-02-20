@@ -6,10 +6,7 @@ const STARTING_POSITION: i32 = 50;
 const P: i32 = 100;
 
 fn main() {
-    println!(
-        "Day 1, part {}",
-        if cfg!(feature = "part2") { "2" } else { "1" }
-    );
+    println!("Day 1, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
 
     // Load the data
     let lines = load::lines();
