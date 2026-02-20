@@ -4,10 +4,7 @@ use common::load;
 
 fn main() {
     #[cfg(not(feature = "instrumented"))]
-    println!(
-        "Day 3, part {}",
-        if cfg!(feature = "part2") { "2" } else { "1" }
-    );
+    println!("Day 3, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
 
     let banks = load::lines();
 
@@ -30,40 +27,22 @@ fn main() {
         let mut start = 0; // Current search start index
         let mut j: u64 = 0;
         for c in 0..count {
-            let remaining_picks = count - c;
+            let remaining_picks = count - c - 1;
             let (i, v) = next_digit(&numbers[start..], remaining_picks);
 
             #[cfg(feature = "instrumented")]
-            instrumentation.set_window( numbers.len(), start, remaining_picks);
+            instrumentation.set_window(numbers.len(), start, remaining_picks);
 
             start += i + 1;
             #[cfg(feature = "instrumented")]
-            instrumentation.record_skip(
-                bank_index,
-                &bank,
-                remaining_picks,
-                joltage + j,
-                i,
-            );
+            instrumentation.record_skip(bank_index, &bank, remaining_picks, joltage + j, i);
             j = j * 10 + v as u64;
             #[cfg(feature = "instrumented")]
             {
                 let pick_index = start + i;
-                instrumentation.record_pick(
-                    bank_index,
-                    &bank,
-                    pick_index,
-                    v,
-                    remaining_picks - 1,
-                    joltage + j,
-                );
+                instrumentation.record_pick(bank_index, &bank, pick_index, v, remaining_picks - 1, joltage + j);
 
-                instrumentation.record_scan_window(
-                    bank_index,
-                    &bank,
-                    remaining_picks - 1,
-                    joltage + j,
-                );
+                instrumentation.record_scan_window(bank_index, &bank, remaining_picks - 1, joltage + j);
             }
         }
         let bank_value = j;
@@ -88,9 +67,12 @@ fn next_digit(numbers: &[u32], n: usize) -> (usize, u32) {
         .iter()
         .take(numbers.len().saturating_sub(n))
         .enumerate()
-        .fold((0, numbers[0]), |(max_i, max_v), (i, &v)| {
-            if v > max_v { (i, v) } else { (max_i, max_v) }
-        })
+        .fold(
+            (0, numbers[0]),
+            |(max_i, max_v), (i, &v)| {
+                if v > max_v { (i, v) } else { (max_i, max_v) }
+            },
+        )
 }
 
 #[cfg(feature = "instrumented")]
@@ -187,13 +169,7 @@ mod instrumentation {
             self.window_end = bank_len.saturating_sub(remaining).max(window_start);
         }
 
-        pub fn start_bank(
-            &mut self,
-            bank_index: usize,
-            bank_digits: &str,
-            bank_len: usize,
-            running_total: u64,
-        ) {
+        pub fn start_bank(&mut self, bank_index: usize, bank_digits: &str, bank_len: usize, running_total: u64) {
             // Reset per-bank state
             self.max_skip_frames_this_bank = if bank_len > 200 { 4 } else { 6 };
             self.skip_frames_this_bank = 0;
@@ -210,7 +186,7 @@ mod instrumentation {
                     bank_index,
                     bank_digits: bank_digits.to_string(),
                     window_start: 0,
-                    window_end: window_end,
+                    window_end,
                     cursor: window_end,
                     remaining_picks: DIGITS_TO_PICK,
                     chosen_so_far: String::new(),
@@ -298,13 +274,7 @@ mod instrumentation {
             );
         }
 
-        pub fn record_scan_window(
-            &mut self,
-            bank_index: usize,
-            bank_digits: &str,
-            remaining_after: usize,
-            running_total: u64,
-        ) {
+        pub fn record_scan_window(&mut self, bank_index: usize, bank_digits: &str, remaining_after: usize, running_total: u64) {
             if remaining_after > 0 {
                 self.push_frame(
                     Frame {
@@ -328,13 +298,7 @@ mod instrumentation {
             }
         }
 
-        pub fn complete_bank(
-            &mut self,
-            bank_index: usize,
-            bank_digits: &str,
-            bank_value: u64,
-            running_total: u64,
-        ) {
+        pub fn complete_bank(&mut self, bank_index: usize, bank_digits: &str, bank_value: u64, running_total: u64) {
             let frame = Frame {
                 frame_type: FrameType::BankComplete,
                 bank_index,
@@ -378,4 +342,3 @@ mod instrumentation {
         }
     }
 }
-

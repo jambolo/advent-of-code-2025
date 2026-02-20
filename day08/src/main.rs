@@ -7,10 +7,7 @@ use instrumentation::Instrumentation;
 
 fn main() {
     #[cfg(not(feature = "instrumented"))]
-    println!(
-        "Day 8, part {}",
-        if cfg!(feature = "part2") { "2" } else { "1" }
-    );
+    println!("Day 8, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
 
     // Load the locations from the input file.
     let lines = load::lines();
@@ -72,12 +69,7 @@ fn main() {
 
             #[cfg(feature = "instrumented")]
             if merged {
-                inst.record_connection(
-                    distances[index].0,
-                    distances[index].1,
-                    &circuits,
-                    circuits.len() == 1,
-                );
+                inst.record_connection(distances[index].0, distances[index].1, &circuits, circuits.len() == 1);
             }
 
             index += 1;
@@ -179,11 +171,7 @@ mod instrumentation {
         pub fn new(locations: &[(i64, i64, i64)]) -> Self {
             let boxes: Vec<JunctionBox> = locations
                 .iter()
-                .map(|(x, y, z)| JunctionBox {
-                    x: *x,
-                    y: *y,
-                    z: *z,
-                })
+                .map(|(x, y, z)| JunctionBox { x: *x, y: *y, z: *z })
                 .collect();
             let num_boxes = boxes.len();
 
@@ -208,13 +196,7 @@ mod instrumentation {
             }
         }
 
-        pub fn record_connection(
-            &mut self,
-            connection: (usize, usize),
-            distance: f64,
-            circuits: &[Vec<usize>],
-            is_final: bool,
-        ) {
+        pub fn record_connection(&mut self, connection: (usize, usize), distance: f64, circuits: &[Vec<usize>], is_final: bool) {
             self.connection_count += 1;
 
             // Build circuit assignments array
@@ -240,14 +222,7 @@ mod instrumentation {
             self.frames.push(frame);
         }
 
-        pub fn finalize(
-            self,
-            final_from_idx: usize,
-            final_to_idx: usize,
-            final_from_x: i64,
-            final_to_x: i64,
-            answer: i64,
-        ) {
+        pub fn finalize(self, final_from_idx: usize, final_to_idx: usize, final_from_x: i64, final_to_x: i64, answer: i64) {
             let log_data = LogData {
                 total_connections_needed: self.num_boxes - 1,
                 boxes: self.boxes,

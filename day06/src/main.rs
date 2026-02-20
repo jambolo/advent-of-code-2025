@@ -7,10 +7,7 @@ use instrumentation::Instrumentation;
 
 fn main() {
     #[cfg(not(feature = "instrumented"))]
-    println!(
-        "Day 6, part {}",
-        if cfg!(feature = "part2") { "2" } else { "1" }
-    );
+    println!("Day 6, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
 
     let lines = load::lines();
 
@@ -89,10 +86,7 @@ fn main() {
         // vector contains the numbers in the corresponding column.
         let mut columns: Vec<Vec<i64>> = Vec::new();
         for line in lines.iter().take(lines.len() - 1) {
-            let numbers: Vec<i64> = line
-                .split_whitespace()
-                .map(|s| s.parse().expect("Invalid number"))
-                .collect();
+            let numbers: Vec<i64> = line.split_whitespace().map(|s| s.parse().expect("Invalid number")).collect();
             for (i, &num) in numbers.iter().enumerate() {
                 if columns.len() <= i {
                     columns.push(Vec::new());
@@ -118,8 +112,7 @@ fn main() {
 }
 
 fn parse_operations(line: &str) -> Vec<char> {
-    line
-        .split_whitespace()
+    line.split_whitespace()
         .map(|s| s.chars().next().expect("No operation found"))
         .collect()
 }
@@ -213,14 +206,7 @@ mod instrumentation {
             });
         }
 
-        pub fn emit_problem(
-            &mut self,
-            index: usize,
-            numbers: &[i64],
-            operator: char,
-            result: i64,
-            running_total: i64,
-        ) {
+        pub fn emit_problem(&mut self, index: usize, numbers: &[i64], operator: char, result: i64, running_total: i64) {
             let (col_start, col_end) = self.column_ranges[index];
             self.frames.push(Frame {
                 frame_type: "problem".to_string(),

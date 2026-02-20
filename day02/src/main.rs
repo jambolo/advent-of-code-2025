@@ -4,10 +4,7 @@ use common::load;
 
 fn main() {
     #[cfg(not(feature = "instrumented"))]
-    println!(
-        "Day 2, part {}",
-        if cfg!(feature = "part2") { "2" } else { "1" }
-    );
+    println!("Day 2, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
 
     // Load the data
     let input = load::string();
@@ -49,9 +46,7 @@ fn part2(ranges: &[(i64, i64)]) {
                     continue;
                 }
 
-                let candidate_length = len / repeat_count;
-                let matched = duplicated(&num_str, candidate_length);
-
+                let matched = duplicated(&num_str, repeat_count);
                 if let Some(candidate) = matched {
                     sum += number;
                     #[cfg(not(feature = "instrumented"))]
@@ -63,7 +58,7 @@ fn part2(ranges: &[(i64, i64)]) {
                         number,
                         sum,
                         repeat_count,
-                        candidate_length,
+                        len / repeat_count,
                         &candidate,
                     );
                     break;
@@ -72,12 +67,7 @@ fn part2(ranges: &[(i64, i64)]) {
         }
 
         #[cfg(feature = "instrumented")]
-        instrumentation.record_range_end(
-            range_index,
-            start,
-            end,
-            sum,
-        );
+        instrumentation.record_range_end(range_index, start, end, sum);
     }
 
     #[cfg(not(feature = "instrumented"))]
@@ -93,7 +83,7 @@ fn part1(ranges: &[(i64, i64)]) {
     for (start, end) in ranges {
         for number in *start..=*end {
             let num_str = number.to_string();
-            if duplicated(&num_str, 2) {
+            if duplicated(&num_str, 2).is_some() {
                 sum += number;
             }
         }
@@ -118,19 +108,20 @@ fn parse_ranges(input: &str) -> Vec<(i64, i64)> {
         .collect()
 }
 
-/// Returns true if all n parts are the same
-fn duplicated(s: &str, n: usize) -> bool {
+/// Returns the repeated chunk if all n parts are the same
+fn duplicated(s: &str, n: usize) -> Option<String> {
     let len = s.len();
-    // Must split evenly into n parts
     if !len.is_multiple_of(n) {
-        return false;
+        return None;
     }
 
     let part_len = len / n;
     let first_chunk = &s.as_bytes()[..part_len];
-    s.as_bytes()
-        .chunks(part_len)
-        .all(|chunk| chunk == first_chunk)
+    if s.as_bytes().chunks(part_len).all(|chunk| chunk == first_chunk) {
+        Some(std::str::from_utf8(first_chunk).unwrap().to_string())
+    } else {
+        None
+    }
 }
 
 #[cfg(feature = "instrumented")]
@@ -199,14 +190,14 @@ mod instrumentation {
             range_start: i64,
             range_end: i64,
             number: i64,
+            digits: &str,
             global_sum: i64,
         ) {
             if !(self.inspected + SAMPLING_STRIDE - 1).is_multiple_of(SAMPLING_STRIDE) {
                 return;
             }
 
-            let range_progress =
-                self.compute_range_progress(number as usize, range_start, range_end);
+            let range_progress = self.compute_range_progress(number as usize, range_start, range_end);
             self.frames.push(Frame {
                 frame_type: "scan_tick",
                 range_index,
@@ -219,7 +210,7 @@ mod instrumentation {
                 inspected: Some(self.inspected),
                 message: None,
                 number: Some(number),
-                digits: Some(digits),
+                digits: Some(digits.to_string()),
                 repeat_count: None,
                 chunk_length: None,
                 candidate_chunk: None,
@@ -227,13 +218,7 @@ mod instrumentation {
             });
         }
 
-        pub fn record_range_start(
-            &mut self,
-            range_index: usize,
-            range_start: i64,
-            range_end: i64,
-            global_sum: i64,
-        ) {
+        pub fn record_range_start(&mut self, range_index: usize, range_start: i64, range_end: i64, global_sum: i64) {
             self.last_range = Some((range_index, range_start, range_end));
             self.frames.push(Frame {
                 frame_type: "range_start",
@@ -290,13 +275,7 @@ mod instrumentation {
             });
         }
 
-        pub fn record_range_end(
-            &mut self,
-            range_index: usize,
-            range_start: i64,
-            range_end: i64,
-            global_sum: i64,
-        ) {
+        pub fn record_range_end(&mut self, range_index: usize, range_start: i64, range_end: i64, global_sum: i64) {
             self.frames.push(Frame {
                 frame_type: "range_end",
                 range_index,
@@ -317,13 +296,7 @@ mod instrumentation {
             });
         }
 
-        pub fn record_final_summary(
-            &mut self,
-            range_index: usize,
-            range_start: i64,
-            range_end: i64,
-            final_sum: i64,
-        ) {
+        pub fn record_final_summary(&mut self, range_index: usize, range_start: i64, range_end: i64, final_sum: i64) {
             self.final_sum = final_sum;
 
             self.frames.push(Frame {

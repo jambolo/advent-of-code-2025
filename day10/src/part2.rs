@@ -90,23 +90,13 @@ fn solve_lp(b_matrix: &[Vec<i32>], j_vector: &[i32]) -> Vec<i32> {
     let m = b_matrix.len(); // Number of rows
     let n = b_matrix[0].len(); // Number of columns
 
-    assert!(
-        j_vector.len() == n,
-        "Joltage vector size must match number of columns in B"
-    );
+    assert!(j_vector.len() == n, "Joltage vector size must match number of columns in B");
 
     // Define the Variables
     let mut vars = variables!();
     // We create a vector of variables, each >= 0 and Integer
     let x: Vec<_> = (0..m)
-        .map(|i| {
-            vars.add(
-                good_lp::variable()
-                    .min(0)
-                    .integer()
-                    .name(format!("x_{}", i)),
-            )
-        })
+        .map(|i| vars.add(good_lp::variable().min(0).integer().name(format!("x_{}", i))))
         .collect();
 
     // Define the Objective Function (Minimize the sum of X)
@@ -227,12 +217,7 @@ mod instrumentation {
             });
         }
 
-        pub fn begin_machine(
-            &mut self,
-            machine_index: usize,
-            buttons_raw: &[Vec<i32>],
-            joltages: &[i32],
-        ) {
+        pub fn begin_machine(&mut self, machine_index: usize, buttons_raw: &[Vec<i32>], joltages: &[i32]) {
             self.current_machine_index = machine_index;
 
             let buttons: Vec<Button> = buttons_raw
@@ -318,8 +303,7 @@ mod instrumentation {
             }
 
             // Emit buttonPress frames for each button with pressCount > 0
-            let mut current_values =
-                vec![0i32; self.current_machine.as_ref().unwrap().joltages.len()];
+            let mut current_values = vec![0i32; self.current_machine.as_ref().unwrap().joltages.len()];
             let mut pressed_buttons: Vec<usize> = Vec::new();
 
             for (button_idx, &count) in press_counts.iter().enumerate() {

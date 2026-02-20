@@ -4,10 +4,7 @@ use common::load;
 
 fn main() {
     #[cfg(not(feature = "instrumented"))]
-    println!(
-        "Day 5, part {}",
-        if cfg!(feature = "part2") { "2" } else { "1" }
-    );
+    println!("Day 5, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
 
     let lines = load::lines();
 
@@ -38,17 +35,12 @@ fn main() {
 }
 
 fn part1(fresh_ranges: &[(i64, i64)], ingredient_ids: &[i64]) {
-    let count = ingredient_ids
-        .iter()
-        .filter(|&&id| is_fresh(fresh_ranges, id))
-        .count();
+    let count = ingredient_ids.iter().filter(|&&id| is_fresh(fresh_ranges, id)).count();
     println!("Number of fresh ingredients: {}", count);
 }
 
 fn is_fresh(fresh_ranges: &[(i64, i64)], id: i64) -> bool {
-    fresh_ranges
-        .iter()
-        .any(|&(start, end)| id >= start && id <= end)
+    fresh_ranges.iter().any(|&(start, end)| id >= start && id <= end)
 }
 
 fn part2(ranges: &[(i64, i64)]) {
@@ -73,12 +65,12 @@ fn part2(ranges: &[(i64, i64)]) {
     let mut merged: Vec<(i64, i64)> = Vec::new();
     for (start, end) in sorted {
         if let Some(last) = merged.last_mut()
-            && start <= last.1 + 1
+            && start <= last.1
         {
             last.1 = last.1.max(end); // Merge overlapping ranges
             #[cfg(feature = "instrumented")]
             inst.emit_merge_step("merged");
-            continue; // Don't push a new range
+            continue;
         }
         merged.push((start, end));
         #[cfg(feature = "instrumented")]
@@ -98,9 +90,7 @@ fn part2(ranges: &[(i64, i64)]) {
 }
 
 fn parse_range(line: &str) -> (i64, i64) {
-    let (start, end) = line
-        .split_once('-')
-        .expect("Failed to split range line on '-'");
+    let (start, end) = line.split_once('-').expect("Failed to split range line on '-'");
 
     (
         start.parse().expect("Failed to parse range start as i64"),
@@ -174,7 +164,8 @@ mod instrumentation {
         }
 
         pub fn emit_initial(&mut self) {
-            let ranges = self.ranges_to_json_with_indices(&self.original_ranges, &(0..self.original_ranges.len()).collect::<Vec<_>>());
+            let ranges =
+                self.ranges_to_json_with_indices(&self.original_ranges, &(0..self.original_ranges.len()).collect::<Vec<_>>());
             self.frames.push(Frame {
                 frame_type: "initial".to_string(),
                 step_index: 0,
@@ -187,11 +178,7 @@ mod instrumentation {
         }
 
         pub fn emit_sorted(&mut self) {
-            let sorted_ranges: Vec<(i64, i64)> = self
-                .sorted_indices
-                .iter()
-                .map(|&i| self.original_ranges[i])
-                .collect();
+            let sorted_ranges: Vec<(i64, i64)> = self.sorted_indices.iter().map(|&i| self.original_ranges[i]).collect();
             self.frames.push(Frame {
                 frame_type: "sorted".to_string(),
                 step_index: 0,
@@ -211,7 +198,10 @@ mod instrumentation {
             self.processed_count += 1;
             let sorted_ranges: Vec<(i64, i64)> = self.sorted_indices.iter().map(|&i| self.original_ranges[i]).collect();
             let merged_ranges = self.compute_merged_ranges();
-            let running_total: i64 = merged_ranges.iter().map(|r| r.end.parse::<i64>().unwrap() - r.start.parse::<i64>().unwrap() + 1).sum();
+            let running_total: i64 = merged_ranges
+                .iter()
+                .map(|r| r.end.parse::<i64>().unwrap() - r.start.parse::<i64>().unwrap() + 1)
+                .sum();
             self.frames.push(Frame {
                 frame_type: "merge_step".to_string(),
                 step_index: self.processed_count,
@@ -256,7 +246,9 @@ mod instrumentation {
         fn compute_merged_ranges(&self) -> Vec<Range> {
             let mut merged: Vec<(i64, i64, usize)> = Vec::new();
             for (i, &orig_idx) in self.sorted_indices.iter().enumerate() {
-                if i >= self.processed_count { break; }
+                if i >= self.processed_count {
+                    break;
+                }
                 let (start, end) = self.original_ranges[orig_idx];
                 if let Some(last) = merged.last_mut()
                     && start <= last.1 + 1
@@ -266,11 +258,14 @@ mod instrumentation {
                 }
                 merged.push((start, end, orig_idx));
             }
-            merged.iter().map(|&(s, e, idx)| Range {
-                start: s.to_string(),
-                end: e.to_string(),
-                original_index: idx,
-            }).collect()
+            merged
+                .iter()
+                .map(|&(s, e, idx)| Range {
+                    start: s.to_string(),
+                    end: e.to_string(),
+                    original_index: idx,
+                })
+                .collect()
         }
 
         fn ranges_to_json_with_indices(&self, ranges: &[(i64, i64)], indices: &[usize]) -> Vec<Range> {

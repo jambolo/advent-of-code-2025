@@ -45,10 +45,7 @@ pub fn parse_machine(line: &str) -> Machine {
             buttons.push(parse_button(part));
         }
     }
-    Machine {
-        final_state,
-        buttons,
-    }
+    Machine { final_state, buttons }
 }
 
 // Parse final state
@@ -65,9 +62,6 @@ fn parse_button(s: &str) -> u64 {
     let trimmed = s.trim_matches(&['(', ')'][..]);
     trimmed
         .split(',')
-        .map(|num| {
-            num.parse::<u64>()
-                .expect("Failed to parse button index as u64")
-        })
+        .map(|num| num.parse::<u64>().expect("Failed to parse button index as u64"))
         .fold(0, |state, num| state | (1 << num))
 }

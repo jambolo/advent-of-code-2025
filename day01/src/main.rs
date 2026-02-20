@@ -7,10 +7,7 @@ const P: i32 = 100;
 
 fn main() {
     #[cfg(not(feature = "instrumented"))]
-    println!(
-        "Day 1, part {}",
-        if cfg!(feature = "part2") { "2" } else { "1" }
-    );
+    println!("Day 1, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
 
     // Load the data
     let lines = load::lines();
@@ -37,14 +34,7 @@ fn main() {
         let remainder = distance % P;
 
         #[cfg(feature = "instrumented")]
-        instrumentation::record_rotation_start(
-            &mut history,
-            current_position,
-            password,
-            &line,
-            distance,
-            turn,
-        );
+        instrumentation::record_rotation_start(&mut history, current_position, password, &line, distance, turn);
 
         // In part 2, count the number of times we pass position 0 (but not land on it)
         if cfg!(feature = "part2") {
@@ -56,12 +46,12 @@ fn main() {
                     #[cfg(feature = "instrumented")]
                     instrumentation::record_zero_passes(&mut history, 1, password, &line, distance, turn);
                     password += 1;
-                },
+                }
                 "L" if (0 < current_position) && (current_position < remainder) => {
                     #[cfg(feature = "instrumented")]
                     instrumentation::record_zero_passes(&mut history, 1, password, &line, distance, turn);
                     password += 1;
-                },
+                }
                 "R" | "L" => {}
                 _ => panic!("Invalid turn direction: {}", turn),
             }
@@ -75,28 +65,20 @@ fn main() {
 
         // Count the number of times the position is 0
         if current_position == 0 {
-                #[cfg(feature = "instrumented")]
-                instrumentation::record_zero_land(
-                    &mut history,
-                    current_position,
-                    password,
-                    &line,
-                    distance,
-                    turn,
-                    full_turns + 1,
-                );
-            password += 1;
-        } else {
             #[cfg(feature = "instrumented")]
-            instrumentation::record_rotation_end(
+            instrumentation::record_zero_land(
                 &mut history,
                 current_position,
                 password,
                 &line,
                 distance,
                 turn,
-                full_turns,
+                full_turns + 1,
             );
+            password += 1;
+        } else {
+            #[cfg(feature = "instrumented")]
+            instrumentation::record_rotation_end(&mut history, current_position, password, &line, distance, turn, full_turns);
         }
     }
 
@@ -121,7 +103,6 @@ mod instrumentation {
         pub progress: f64,
     }
 
-
     pub fn record_initial(history: &mut Recording, total_rotations: usize, position: i32, password: i32) {
         history.total_rotations = total_rotations;
         history.frames.push(json!({
@@ -133,7 +114,14 @@ mod instrumentation {
         }));
     }
 
-    pub fn record_rotation_start(history: &mut Recording, position: i32, password: i32, instruction: &str, distance: i32, direction: &str) {
+    pub fn record_rotation_start(
+        history: &mut Recording,
+        position: i32,
+        password: i32,
+        instruction: &str,
+        distance: i32,
+        direction: &str,
+    ) {
         history.rotation_number += 1;
         history.progress = (history.rotation_number as f64) / (history.total_rotations as f64);
         history.frames.push(json!({

@@ -63,8 +63,7 @@ pub fn comma_separated_values() -> Vec<String> {
     let path = get_path();
 
     // Load data
-    read_comma_separated_values(&path)
-        .unwrap_or_else(|_| panic!("Could not read the file \"{}\"", path))
+    read_comma_separated_values(&path).unwrap_or_else(|_| panic!("Could not read the file \"{}\"", path))
 }
 
 /// Reads an entire file and splits it by ',' into a vector of strings.
@@ -142,11 +141,7 @@ fn read_numbers_map(filename: impl AsRef<Path>) -> io::Result<Vec<Vec<i32>>> {
     read_to_string(filename).map(|input| {
         input
             .lines()
-            .map(|line| {
-                line.chars()
-                    .filter_map(|c| c.to_digit(10).map(|u| u as i32))
-                    .collect()
-            })
+            .map(|line| line.chars().filter_map(|c| c.to_digit(10).map(|u| u as i32)).collect())
             .collect()
     })
 }
@@ -177,8 +172,7 @@ mod tests {
         let input = "foo, bar, baz";
         let file_path = std::env::temp_dir().join("test_csv.txt");
         std::fs::write(&file_path, input).expect("Failed to write file");
-        let values =
-            read_comma_separated_values(&file_path).expect("Failed to read comma separated values");
+        let values = read_comma_separated_values(&file_path).expect("Failed to read comma separated values");
         assert_eq!(values, vec!["foo", "bar", "baz"]);
         std::fs::remove_file(file_path).expect("Failed to remove file");
     }

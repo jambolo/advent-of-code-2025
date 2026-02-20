@@ -4,10 +4,7 @@ use common::load;
 
 fn main() {
     #[cfg(not(feature = "instrumented"))]
-    println!(
-        "Day 7, part {}",
-        if cfg!(feature = "part2") { "2" } else { "1" }
-    );
+    println!("Day 7, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
 
     let map = load::map();
 
@@ -84,10 +81,7 @@ fn part2(map: &[Vec<char>]) {
         // Scan each beam column for splitters in this row
         for x in timelines.keys().cloned().collect::<Vec<_>>() {
             if row[x] == '^' {
-                let count = timelines
-                    .remove(&x)
-                    .expect("Timeline key not found during removal");
-
+                let count = timelines.remove(&x).expect("Timeline key not found during removal");
                 #[cfg(feature = "instrumented")]
                 inst.record_split(
                     x,
@@ -220,13 +214,7 @@ mod instrumentation {
             self.row_had_splits = false;
         }
 
-        pub fn record_split(
-            &mut self,
-            column: usize,
-            timelines_before: i64,
-            left_col: Option<usize>,
-            right_col: Option<usize>,
-        ) {
+        pub fn record_split(&mut self, column: usize, timelines_before: i64, left_col: Option<usize>, right_col: Option<usize>) {
             self.splits_count += 1;
             self.row_had_splits = true;
 
@@ -323,10 +311,7 @@ mod instrumentation {
                 final_timelines: self.frames.last().map(|f| f.total_timelines).unwrap_or(0),
             };
 
-            println!(
-                "{}",
-                serde_json::to_string(&output).expect("Failed to serialize JSON")
-            );
+            println!("{}", serde_json::to_string(&output).expect("Failed to serialize JSON"));
         }
     }
 }

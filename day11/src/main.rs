@@ -8,10 +8,7 @@ use instrumentation::Instrumentation;
 
 fn main() {
     #[cfg(not(feature = "instrumented"))]
-    println!(
-        "Day 11, part {}",
-        if cfg!(feature = "part2") { "2" } else { "1" }
-    );
+    println!("Day 11, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
 
     let lines = load::lines();
 
@@ -26,10 +23,7 @@ fn main() {
             .split_once(':')
             .expect("Failed to split line on ':' for node and outputs");
         let node = node_str.trim().to_string();
-        let outputs: Vec<String> = outputs_str
-            .split_whitespace()
-            .map(|s| s.to_string())
-            .collect();
+        let outputs: Vec<String> = outputs_str.split_whitespace().map(|s| s.to_string()).collect();
         dag.insert(node, outputs);
     }
 
@@ -40,19 +34,12 @@ fn main() {
     }
 }
 
-fn reduce(
-    dag: &mut HashMap<String, Vec<String>>,
-    excluded: &[&str],
-    #[cfg(feature = "instrumented")] inst: &mut Instrumentation,
-) {
+fn reduce(dag: &mut HashMap<String, Vec<String>>, excluded: &[&str], #[cfg(feature = "instrumented")] inst: &mut Instrumentation) {
     loop {
         let out = "out";
         let mut to_remove = Vec::new();
         for (node, outputs) in dag.iter() {
-            if !outputs.is_empty()
-                && !excluded.contains(&node.as_str())
-                && outputs.iter().all(|o| o == out)
-            {
+            if !outputs.is_empty() && !excluded.contains(&node.as_str()) && outputs.iter().all(|o| o == out) {
                 to_remove.push(node.clone());
             }
         }
@@ -65,9 +52,7 @@ fn reduce(
         inst.record_reduction_batch(&to_remove, dag);
 
         for node in &to_remove {
-            dag.get_mut(node)
-                .expect("Node to remove not found in dag")
-                .clear();
+            dag.get_mut(node).expect("Node to remove not found in dag").clear();
         }
 
         for outputs in dag.values_mut() {
@@ -89,15 +74,12 @@ fn part2(dag: &HashMap<String, Vec<String>>) {
     inst.emit_graph_display_frames();
 
     // Here is the plan.
-    // First, note that if there are paths from fft -> dac, then there cannot be any paths from dac -> fft. And if
-    // there are no paths from fft -> dac, then there must be paths from dac -> fft.
-    //
-    // Test for the existence of svr -> fft -> dac -> out by counting the number of paths from "fft" to "dac".
-    // If it is not zero, then count the total number of paths as follows:
+    // Count the number of paths from "fft" to "dac".
+    // If it is not zero, then
     //     Count the number of paths from "dac" to "out".
     //     Count the number of paths from "svr" to "fft".
     //     Return the product of the three counts.
-    // Otherwise, count the paths in svr -> dac -> fft -> out:
+    // Otherwise,
     //     Count the number of paths from "svr" to "dac".
     //     Count the number of paths from "dac" to "fft".
     //     Count the number of paths from "fft" to "out". Return the product.
@@ -110,11 +92,19 @@ fn part2(dag: &HashMap<String, Vec<String>>) {
         #[cfg(feature = "instrumented")]
         inst.begin_segment(1, "fft", "dac");
 
-        reduce(&mut dag, &excluded,
-            #[cfg(feature = "instrumented")] &mut inst
+        reduce(
+            &mut dag,
+            &excluded,
+            #[cfg(feature = "instrumented")]
+            &mut inst,
         );
-        count_paths(&dag, "fft", "dac", "out",
-            #[cfg(feature = "instrumented")] &mut inst
+        count_paths(
+            &dag,
+            "fft",
+            "dac",
+            "out",
+            #[cfg(feature = "instrumented")]
+            &mut inst,
         )
     };
 
@@ -126,8 +116,13 @@ fn part2(dag: &HashMap<String, Vec<String>>) {
         inst.begin_segment(2, "dac", "out");
 
         // Count the number of paths from "dac" to "out".
-        let dac_to_out = count_paths(dag, "dac", "out", "out",
-            #[cfg(feature = "instrumented")] &mut inst
+        let dac_to_out = count_paths(
+            dag,
+            "dac",
+            "out",
+            "out",
+            #[cfg(feature = "instrumented")]
+            &mut inst,
         );
 
         #[cfg(feature = "instrumented")]
@@ -141,11 +136,19 @@ fn part2(dag: &HashMap<String, Vec<String>>) {
             #[cfg(feature = "instrumented")]
             inst.begin_segment(0, "svr", "fft");
 
-            reduce(&mut dag, &excluded,
-                #[cfg(feature = "instrumented")] &mut inst
+            reduce(
+                &mut dag,
+                &excluded,
+                #[cfg(feature = "instrumented")]
+                &mut inst,
             );
-            count_paths(&dag, "svr", "fft", "out",
-                #[cfg(feature = "instrumented")] &mut inst
+            count_paths(
+                &dag,
+                "svr",
+                "fft",
+                "out",
+                #[cfg(feature = "instrumented")]
+                &mut inst,
             )
         };
 
@@ -168,11 +171,19 @@ fn part2(dag: &HashMap<String, Vec<String>>) {
             #[cfg(feature = "instrumented")]
             inst.begin_segment(0, "svr", "dac");
 
-            reduce(&mut dag, &excluded,
-                #[cfg(feature = "instrumented")] &mut inst
+            reduce(
+                &mut dag,
+                &excluded,
+                #[cfg(feature = "instrumented")]
+                &mut inst,
             );
-            count_paths(&dag, "svr", "dac", "out",
-                #[cfg(feature = "instrumented")] &mut inst
+            count_paths(
+                &dag,
+                "svr",
+                "dac",
+                "out",
+                #[cfg(feature = "instrumented")]
+                &mut inst,
             )
         };
 
@@ -187,11 +198,19 @@ fn part2(dag: &HashMap<String, Vec<String>>) {
             #[cfg(feature = "instrumented")]
             inst.begin_segment(1, "dac", "fft");
 
-            reduce(&mut dag, &excluded,
-                #[cfg(feature = "instrumented")] &mut inst
+            reduce(
+                &mut dag,
+                &excluded,
+                #[cfg(feature = "instrumented")]
+                &mut inst,
             );
-            count_paths(&dag, "dac", "fft", "out",
-                #[cfg(feature = "instrumented")] &mut inst
+            count_paths(
+                &dag,
+                "dac",
+                "fft",
+                "out",
+                #[cfg(feature = "instrumented")]
+                &mut inst,
             )
         };
         #[cfg(feature = "instrumented")]
@@ -201,8 +220,13 @@ fn part2(dag: &HashMap<String, Vec<String>>) {
         inst.begin_segment(2, "fft", "out");
 
         // Count the number of paths from "fft" to "out".
-        let fft_to_out = count_paths(dag, "fft", "out", "out",
-            #[cfg(feature = "instrumented")] &mut inst
+        let fft_to_out = count_paths(
+            dag,
+            "fft",
+            "out",
+            "out",
+            #[cfg(feature = "instrumented")]
+            &mut inst,
         );
 
         #[cfg(feature = "instrumented")]
@@ -227,8 +251,13 @@ fn part2(dag: &HashMap<String, Vec<String>>) {
 
 fn part1(dag: &HashMap<String, Vec<String>>) {
     // Recursively traverse the DAG from "you" to count all unique paths to "out" nodes.
-    let result = count_paths(dag, "you", "out", "out",
-        #[cfg(feature = "instrumented")] &mut Instrumentation::new(dag)
+    let result = count_paths(
+        dag,
+        "you",
+        "out",
+        "out",
+        #[cfg(feature = "instrumented")]
+        &mut Instrumentation::new(dag),
     );
     println!("Result: {}", result);
 }
@@ -250,8 +279,13 @@ fn count_paths(
             let rest = if output == to {
                 1
             } else if output != terminal {
-                count_paths(dag, output, to, terminal,
-                    #[cfg(feature = "instrumented")] inst
+                count_paths(
+                    dag,
+                    output,
+                    to,
+                    terminal,
+                    #[cfg(feature = "instrumented")]
+                    inst,
                 )
             } else {
                 0
@@ -447,11 +481,7 @@ mod instrumentation {
             self.output.frames.push(frame);
         }
 
-        pub fn record_reduction_batch(
-            &mut self,
-            pruned: &[String],
-            _dag: &HashMap<String, Vec<String>>,
-        ) {
+        pub fn record_reduction_batch(&mut self, pruned: &[String], _dag: &HashMap<String, Vec<String>>) {
             let mut new_pruned_edges = Vec::new();
             for node in pruned {
                 if !self.pruned_nodes.contains(node) {
@@ -506,16 +536,8 @@ mod instrumentation {
 
                 let frame = Frame {
                     frame_type: "counting".to_string(),
-                    active_nodes: if active_nodes.is_empty() {
-                        None
-                    } else {
-                        Some(active_nodes)
-                    },
-                    active_edges: if active_edges.is_empty() {
-                        None
-                    } else {
-                        Some(active_edges)
-                    },
+                    active_nodes: if active_nodes.is_empty() { None } else { Some(active_nodes) },
+                    active_edges: if active_edges.is_empty() { None } else { Some(active_edges) },
                     pruned_nodes: None,
                     pruned_edges: None,
                     current_node: Some(current_node),

@@ -10,10 +10,7 @@ type Rect = ((usize, usize), (usize, usize));
 
 fn main() {
     #[cfg(not(feature = "instrumented"))]
-    println!(
-        "Day 9, part {}",
-        if cfg!(feature = "part2") { "2" } else { "1" }
-    );
+    println!("Day 9, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
 
     #[cfg(feature = "instrumented")]
     let mut inst = Instrumentation::new();
@@ -34,21 +31,11 @@ fn main() {
 
     // List of edges of the region with normalized vertex order.
     let edges: Vec<_> = consecutive_pairs(&corners)
-        .map(|(v0, v1)| {
-            if v0.0 < v1.0 || v0.1 < v1.1 {
-                (*v0, *v1)
-            } else {
-                (*v1, *v0)
-            }
-        })
+        .map(|(v0, v1)| if v0.0 < v1.0 || v0.1 < v1.1 { (*v0, *v1) } else { (*v1, *v0) })
         .collect();
 
     // List of horizontal edges with normalized vertex order.
-    let horizontal_edges: Vec<_> = edges
-        .iter()
-        .filter(|(v0, v1)| v0.1 == v1.1)
-        .copied()
-        .collect();
+    let horizontal_edges: Vec<_> = edges.iter().filter(|(v0, v1)| v0.1 == v1.1).copied().collect();
 
     #[cfg(feature = "instrumented")]
     inst.emit_initial(&corners, &edges);
@@ -61,8 +48,7 @@ fn main() {
             let (x1, y1) = corners[j];
             let area = ((x1 as i64 - x0 as i64).abs() + 1) * ((y1 as i64 - y0 as i64).abs() + 1);
             if cfg!(feature = "part2") {
-                let is_valid =
-                    fully_contained(&edges, &horizontal_edges, &(corners[i], corners[j]));
+                let is_valid = fully_contained(&edges, &horizontal_edges, &(corners[i], corners[j]));
                 #[cfg(feature = "instrumented")]
                 inst.record_candidate(&corners, &edges, i, j, area, is_valid);
                 if is_valid {
@@ -80,10 +66,10 @@ fn main() {
     let largest = rectangles.last().expect("No rectangles found");
 
     #[cfg(feature = "instrumented")]
-    inst.emit_final(&corners, &edges, largest.0.0, largest.0.1, largest.1);
-
-    #[cfg(feature = "instrumented")]
-    inst.print();
+    {
+        inst.emit_final(&corners, &edges, largest.0.0, largest.0.1, largest.1);
+        inst.print();
+    }
 
     // Output the area of the largest rectangle.
     #[cfg(not(feature = "instrumented"))]
@@ -140,10 +126,7 @@ fn fully_contained(edges: &[Edge], horizontal_edges: &[Edge], rect: &Rect) -> bo
 }
 
 fn consecutive_pairs<T>(slice: &[T]) -> impl Iterator<Item = (&T, &T)> {
-    slice
-        .iter()
-        .zip(slice.iter().cycle().skip(1))
-        .take(slice.len())
+    slice.iter().zip(slice.iter().cycle().skip(1)).take(slice.len())
 }
 
 #[cfg(feature = "instrumented")]

@@ -34,10 +34,7 @@ struct Region {
 
 fn main() {
     #[cfg(not(feature = "instrumented"))]
-    println!(
-        "Day 12, part {}",
-        if cfg!(feature = "part2") { "2" } else { "1" }
-    );
+    println!("Day 12, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
 
     let lines = load::lines();
     let (packages, regions) = parse_input(&lines);
@@ -64,13 +61,7 @@ fn main() {
         }
 
         #[cfg(feature = "instrumented")]
-        inst.region_start(
-            region.width,
-            region.height,
-            &region.counts,
-            packages_area,
-            total_packages,
-        );
+        inst.region_start(region.width, region.height, &region.counts, packages_area, total_packages);
 
         if packages_area > region_area {
             rejected += 1;
@@ -131,10 +122,7 @@ fn main() {
     {
         println!("Rejected: {}", rejected);
         println!("Accepted: {}", accepted);
-        println!(
-            "Undetermined: {}",
-            regions.len() as i64 - accepted - rejected
-        );
+        println!("Undetermined: {}", regions.len() as i64 - accepted - rejected);
     }
 
     #[cfg(feature = "instrumented")]
@@ -172,11 +160,7 @@ fn parse_region(line: &str) -> Region {
     let (dims_str, counts_str) = line.split_once(':').expect("Invalid region format");
     let (width, height) = parse_region_dimensions(dims_str);
     let counts = parse_region_counts(counts_str);
-    Region {
-        width,
-        height,
-        counts,
-    }
+    Region { width, height, counts }
 }
 
 fn parse_region_counts(counts_str: &str) -> Vec<usize> {
@@ -187,10 +171,7 @@ fn parse_region_counts(counts_str: &str) -> Vec<usize> {
 }
 
 fn parse_region_dimensions(dims_str: &str) -> (usize, usize) {
-    let (width_str, height_str) = dims_str
-        .trim()
-        .split_once('x')
-        .expect("Invalid region dimensions");
+    let (width_str, height_str) = dims_str.trim().split_once('x').expect("Invalid region dimensions");
     let width: usize = width_str.parse().expect("Invalid width");
     let height: usize = height_str.parse().expect("Invalid height");
     (width, height)
@@ -206,9 +187,7 @@ fn parse_package_shape(lines: &[String]) -> [[char; 3]; 3] {
 }
 
 fn parse_package_header(line: &str) -> usize {
-    line.trim_end_matches(':')
-        .parse()
-        .expect("Invalid package id")
+    line.trim_end_matches(':').parse().expect("Invalid package id")
 }
 
 #[cfg(feature = "instrumented")]
@@ -368,19 +347,10 @@ mod instrumentation {
 
         fn should_show_detail(&self) -> bool {
             let total = self.output.total_regions;
-            self.region_index < 20
-                || self.region_index >= total.saturating_sub(20)
-                || self.region_index % 10 == 0
+            self.region_index < 20 || self.region_index >= total.saturating_sub(20) || self.region_index % 10 == 0
         }
 
-        pub fn region_start(
-            &mut self,
-            width: usize,
-            height: usize,
-            counts: &[usize],
-            present_area: usize,
-            total_presents: usize,
-        ) {
+        pub fn region_start(&mut self, width: usize, height: usize, counts: &[usize], present_area: usize, total_presents: usize) {
             if !self.should_show_detail() {
                 return;
             }
@@ -392,11 +362,7 @@ mod instrumentation {
                     accepted_count: self.accepted,
                     rejected_count: self.rejected,
                     undetermined_count: self.undetermined,
-                    message: format!(
-                        "Processed regions {}-{}...",
-                        self.last_batch_index + 1,
-                        self.region_index - 1
-                    ),
+                    message: format!("Processed regions {}-{}...", self.last_batch_index + 1, self.region_index - 1),
                 });
             }
 
@@ -468,11 +434,7 @@ mod instrumentation {
                     accepted_count: accepted,
                     rejected_count: rejected,
                     undetermined_count: undetermined,
-                    message: format!(
-                        "Processed regions {}-{}...",
-                        self.last_batch_index + 1,
-                        self.region_index
-                    ),
+                    message: format!("Processed regions {}-{}...", self.last_batch_index + 1, self.region_index),
                 });
                 self.last_batch_index = self.region_index;
             }

@@ -7,10 +7,7 @@ use instrumentation::Instrumentation;
 
 fn main() {
     #[cfg(not(feature = "instrumented"))]
-    println!(
-        "Day 4, part {}",
-        if cfg!(feature = "part2") { "2" } else { "1" }
-    );
+    println!("Day 4, part {}", if cfg!(feature = "part2") { "2" } else { "1" });
 
     let map = load::map();
 
@@ -46,11 +43,7 @@ fn neighboring_cells(map: &[Vec<char>], x: usize, y: usize) -> impl Iterator<Ite
     let y0 = y.saturating_sub(1);
     let x1 = (x + 1).min(width - 1);
     let y1 = (y + 1).min(height - 1);
-    (y0..=y1).flat_map(move |ny| {
-        (x0..=x1)
-            .filter(move |&nx| nx != x || ny != y)
-            .map(move |nx| map[ny][nx])
-    })
+    (y0..=y1).flat_map(move |ny| (x0..=x1).filter(move |&nx| nx != x || ny != y).map(move |nx| map[ny][nx]))
 }
 
 fn part2(map: &[Vec<char>]) {
